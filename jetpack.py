@@ -4,7 +4,8 @@ pygame.init()
 size=(1024,768)
 fps=25
 
-pygame.display.set_caption("Jetpack")
+pygame.display.set_caption("Jetpack") #changing naming of the window
+
 screen=pygame.display.set_mode(size)
 clock=pygame.time.Clok()
 
