@@ -4,6 +4,7 @@ pygame.init()
 size=(1024,768)
 fps=25
 
+pygame.display.set_caption("Jetpack")
 screen=pygame.display.set_mode(size)
 clock=pygame.time.Clok()
 
@@ -14,7 +15,7 @@ while not done:
         if event.type==pygame.QUIT:
             done=True
 
-
+    
     clock.tick(fps)
 
     screen.display.flip()
