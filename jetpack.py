@@ -21,3 +21,4 @@ while not done:
 
     screen.display.flip()
 pygame.quit()
+print('Hello')
