@@ -17,7 +17,7 @@ class Player(pygame.sprite.Sprite):
         self.image = pygame.image.load('player_stand.png').convert()#how that sprite looks like
         self.image.set_colorkey(BLACK) #ignore background color of the image
         self.rect = self.image.get_rect()#rectangle that incloses the sprite
-        self.rect.centerx = 140
+        self.rect.centerx = 145
         self.rect.bottom = height-150
         
         
