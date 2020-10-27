@@ -8,6 +8,7 @@ pygame.display.set_caption("Jetpack") #changing naming of the window
 
 screen=pygame.display.set_mode(size)
 clock=pygame.time.Clok()
+#here will be smth interesting
 
 
 done=False
