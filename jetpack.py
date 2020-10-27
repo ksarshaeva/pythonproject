@@ -34,9 +34,15 @@ screen=pygame.display.set_mode((width,height))
 pygame.display.set_caption("Jetpack") #changing naming of the window
 clock=pygame.time.Clock()
 
+<<<<<<< HEAD
 all_sprites = pygame.sprite.Group()
 player = Player() #drawing the player
 all_sprites.add(player)  #drawing the player
+=======
+screen=pygame.display.set_mode(size)
+clock=pygame.time.Clok()
+#here will be smth interesting
+>>>>>>> main
 
 running = True 
 while running:
