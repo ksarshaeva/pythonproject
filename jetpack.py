@@ -1,7 +1,6 @@
 import pygame
 width = 1030
 height = 580
-floor = height-50
 fps = 60
 
 running_sprite = "running.png"
@@ -35,7 +34,7 @@ class Player(pygame.sprite.Sprite):
         self.image = self.running_frame[0]#how that sprite looks like
         self.rect = self.image.get_rect()#rectangle that incloses the sprite
         self.rect.centerx = 145
-        self.rect.bottom = floor
+        self.rect.bottom = height-50
         self.speedy = 0
         self.speedx = 0
 
@@ -80,8 +79,8 @@ class Player(pygame.sprite.Sprite):
         #boundaries 
         if self.rect.top < 100: #doesn't go above the ceiling 
             self.rect.top = 100
-        if self.rect.bottom > floor: #same for the floor
-            self.rect.bottom = floor
+        if self.rect.bottom > height-50: #same for the floor
+            self.rect.bottom = height-50
         
     def animate(self):
         now = pygame.time.get_ticks()
