@@ -3,19 +3,18 @@ width = 1030
 height = 580
 fps = 60
 
-running_sprite = "running.png"
-flying_sprite = "flying.png"
+name = "spritesheet.png"
 #colors
 BLACK=(0,0,0)
 WHITE = (255,255,255)
 background = pygame.image.load("background.jpeg")
 
 #set up assets(art and sound)
-class RunSpritesheet:
+class Spritesheet:
     def __init__(self,name):
         self.spritesheet = pygame.image.load(name).convert()
 
-    def get_image(self,x,y,w,h):
+    def get_image(self,x,y,w,h):  #opens the spritesheet that we need to use
         image = pygame.Surface((w,h))
         image.blit(self.spritesheet, (0,0),(x,y,w,h))
         image = pygame.transform.scale(image,(75,120))
@@ -24,20 +23,37 @@ class RunSpritesheet:
 class Player(pygame.sprite.Sprite):
     #sprite for the player
     def __init__(self):
-        self.looks = RunSpritesheet(running_sprite)
-        pygame.sprite.Sprite.__init__(self)#built in function,without which sprite will not work
-        self.running = False
-        self.ascending = False
+        self.flying = False
+        self.looks = Spritesheet(name)
         self.current_frame = 0
         self.last_update = 0 #keeps track when the last sprite change happened 
         self.load_images()
         self.image = self.running_frame[0]#how that sprite looks like
         self.rect = self.image.get_rect()#rectangle that incloses the sprite
+        pygame.sprite.Sprite.__init__(self)#built in function,without which sprite will not work
         self.rect.centerx = 145
         self.rect.bottom = height-50
         self.speedy = 0
         self.speedx = 0
 
+    def update(self):
+        self.animate()
+        keystate=pygame.key.get_pressed() #gives a bool list of keys that are down(pressed)
+        self.speedx = +2
+        self.rect.x += self.speedx
+        if keystate[pygame.K_w]:
+            self.speedy = -5  #flying up
+            self.flying = True 
+        elif not keystate[pygame.K_w]:
+            self.speedy += 0.4    #gravity fall
+        self.rect.y += self.speedy
+        #boundaries 
+        if self.rect.top < 100: #doesn't go above the ceiling 
+            self.rect.top = 100
+        if self.rect.bottom > height-50: #same for the floor
+            self.rect.bottom = height-50
+            self.flying = False
+            
     def load_images(self):
         self.running_frame = [self.looks.get_image(198,0,365,552),
                               self.looks.get_image(889,0,365,552),
@@ -47,6 +63,7 @@ class Player(pygame.sprite.Sprite):
                               self.looks.get_image(198,599,365,552),
                               self.looks.get_image(889,599,365,552),
                               self.looks.get_image(1580,599,365,552),
+                              self.looks.get_image(2273,599,365,552),
                               self.looks.get_image(2965,599,365,552),
                               self.looks.get_image(198,1198,365,552),
                               self.looks.get_image(889,1198,365,552),
@@ -56,50 +73,40 @@ class Player(pygame.sprite.Sprite):
         for frame in self.running_frame:
             frame.set_colorkey(BLACK)#ignore black background
             
-        self.ascending_frame = []
-        for frame in self.ascending_frame:
+        self.flying_frame = [self.looks.get_image(289,17,317,552),
+                             self.looks.get_image(981,17,317,552),
+                             self.looks.get_image(1673,17,317,552), # !!!!!!!incorrect coordinates for flying sprites !!!!!!!!
+                             self.looks.get_image(2365,17,317,552),
+                             self.looks.get_image(3057,17,317,552),
+                             self.looks.get_image(289,616,317,552),
+                             self.looks.get_image(981,616,317,552),
+                             self.looks.get_image(1673,616,317,552),
+                             self.looks.get_image(2365,616,317,552),
+                             self.looks.get_image(3057,616,317,552),
+                             ]
+        for frame in self.flying_frame:
             frame.set_colorkey(BLACK)
             
-        self.descending_frame = []
-        for frame in self.descending_frame:
-            frame.set_colorkey(BLACK)
-        
-    def update(self):
-        self.animate()
-        keystate=pygame.key.get_pressed() #gives a bool list of keys that are down(pressed)
-        self.speedx = +2
-        self.rect.x += self.speedx
-        if keystate[pygame.K_w]:
-            self.speedy = -5  #flying up
-            self.ascending = True 
-        elif not keystate[pygame.K_w]:
-            self.speedy += 0.4    #gravity fall
-            self.ascending  = False 
-        self.rect.y += self.speedy
-        #boundaries 
-        if self.rect.top < 100: #doesn't go above the ceiling 
-            self.rect.top = 100
-        if self.rect.bottom > height-50: #same for the floor
-            self.rect.bottom = height-50
-        
     def animate(self):
         now = pygame.time.get_ticks()
-        if not self.ascending:
+        if not self.flying:
             if now - self.last_update > 110:
                 self.last_update = now
                 self.current_frame = (self.current_frame + 1) % len(self.running_frame)
                 self.image = self.running_frame[self.current_frame]
+        else:
+            if now  - self.last_update > 110:
+                self.last_update = now
+                self.current_frame = (self.current_frame +1) % len(self.flying_frame)
+                self.image = self.flying_frame[self.current_frame]
         
-
-    
-
-
 #initializing pygame and creating a window 
 pygame.init()
 pygame.mixer.init() #sounds
 screen=pygame.display.set_mode((width,height))
 pygame.display.set_caption("Jetpack") #changing naming of the window
 clock=pygame.time.Clock()
+
 
 all_sprites = pygame.sprite.Group()
 player = Player() #drawing the player
