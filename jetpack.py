@@ -4,6 +4,10 @@ height = 580
 floor = height-50
 fps = 60
 
+player_acc = 0.5
+#player_gravity = 0.3
+#player_acceleratio= 0.3
+
 
 #colors
 BLACK=(0,0,0)
@@ -24,18 +28,18 @@ class Player(pygame.sprite.Sprite):
         self.speedy = 0
         self.speedx = 0
         
-        
-
     def update(self):
         keystate=pygame.key.get_pressed() #gives a bool list of keys that are down(pressed)
         self.speedx = +2
         self.rect.x += self.speedx
         if keystate[pygame.K_w]:
-            self.speedy = -7
+            self.speedy = -5
         else:
-            self.speedy = +5
-        self.rect.y +=self.speedy
-        if self.rect.top < 100: #if the player touches the ceiling he doesn't go above it
+            self.speedy += 1
+        self.rect.y += self.speedy 
+
+        #boundaries 
+        if self.rect.top < 100: #doesn't go above the ceiling 
             self.rect.top = 100
         if self.rect.bottom > floor: #same for the floor
             self.rect.bottom = floor
