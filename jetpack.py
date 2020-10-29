@@ -73,16 +73,16 @@ class Player(pygame.sprite.Sprite):
         for frame in self.running_frame:
             frame.set_colorkey(BLACK)#ignore black background
             
-        self.flying_frame = [self.looks.get_image(289,17,317,552),
-                             self.looks.get_image(981,17,317,552),
-                             self.looks.get_image(1673,17,317,552), # !!!!!!!incorrect coordinates for flying sprites !!!!!!!!
-                             self.looks.get_image(2365,17,317,552),
-                             self.looks.get_image(3057,17,317,552),
-                             self.looks.get_image(289,616,317,552),
-                             self.looks.get_image(981,616,317,552),
-                             self.looks.get_image(1673,616,317,552),
-                             self.looks.get_image(2365,616,317,552),
-                             self.looks.get_image(3057,616,317,552),
+        self.flying_frame = [self.looks.get_image(289,1814,317,552),
+                             self.looks.get_image(981,1814,317,552),
+                             self.looks.get_image(1673,1814,317,552), 
+                             self.looks.get_image(2365,1814,317,552),
+                             self.looks.get_image(3057,1814,317,552),
+                             self.looks.get_image(289,2413,317,552),
+                             self.looks.get_image(981,2413,317,552),
+                             self.looks.get_image(1673,2413,317,552),
+                             self.looks.get_image(2365,2413,317,552),
+                             self.looks.get_image(3057,2413,317,552),
                              ]
         for frame in self.flying_frame:
             frame.set_colorkey(BLACK)
@@ -90,7 +90,7 @@ class Player(pygame.sprite.Sprite):
     def animate(self):
         now = pygame.time.get_ticks()
         if not self.flying:
-            if now - self.last_update > 110:
+            if now - self.last_update > 90:
                 self.last_update = now
                 self.current_frame = (self.current_frame + 1) % len(self.running_frame)
                 self.image = self.running_frame[self.current_frame]
