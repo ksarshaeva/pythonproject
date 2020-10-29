@@ -1,13 +1,20 @@
 import pygame
+import random
 width = 1030
 height = 580
-fps = 60
+fps=60
 
 name = "spritesheet.png"
 #colors
 BLACK=(0,0,0)
 WHITE = (255,255,255)
-background = pygame.image.load("background.jpeg")
+
+#initializing pygame and creating a window 
+pygame.init()
+pygame.mixer.init() #sounds
+screen=pygame.display.set_mode((width,height))
+pygame.display.set_caption("Jetpack") #changing naming of the window
+clock=pygame.time.Clock()
 
 #set up assets(art and sound)
 class Spritesheet:
@@ -23,6 +30,7 @@ class Spritesheet:
 class Player(pygame.sprite.Sprite):
     #sprite for the player
     def __init__(self):
+        pygame.sprite.Sprite.__init__(self)#built in function,without which sprite will not work
         self.flying = False
         self.looks = Spritesheet(name)
         self.current_frame = 0
@@ -30,7 +38,6 @@ class Player(pygame.sprite.Sprite):
         self.load_images()
         self.image = self.running_frame[0]#how that sprite looks like
         self.rect = self.image.get_rect()#rectangle that incloses the sprite
-        pygame.sprite.Sprite.__init__(self)#built in function,without which sprite will not work
         self.rect.centerx = 145
         self.rect.bottom = height-50
         self.speedy = 0
@@ -47,6 +54,7 @@ class Player(pygame.sprite.Sprite):
         elif not keystate[pygame.K_w]:
             self.speedy += 0.4    #gravity fall
         self.rect.y += self.speedy
+            
         #boundaries 
         if self.rect.top < 100: #doesn't go above the ceiling 
             self.rect.top = 100
@@ -100,40 +108,80 @@ class Player(pygame.sprite.Sprite):
                 self.current_frame = (self.current_frame +1) % len(self.flying_frame)
                 self.image = self.flying_frame[self.current_frame]
         
-#initializing pygame and creating a window 
-pygame.init()
-pygame.mixer.init() #sounds
-screen=pygame.display.set_mode((width,height))
-pygame.display.set_caption("Jetpack") #changing naming of the window
-clock=pygame.time.Clock()
+    
+class Mob(pygame.sprite.Sprite):
+    def __init__(self):
+        pygame.sprite.Sprite.__init__(self)
+        self.image = pygame.image.load('rocket.png').convert()
+        self.image.set_colorkey(BLACK)
+        self.rect = self.image.get_rect()
+        self.rect.x=random.randrange(width+10)
+        self.rect.y=random.randrange(height-50,0,-10)
+        self.speedx=random.randrange(1,8)
+        
+    def update(self):
+        self.rect.x-=self.speedx
 
+
+        
+class Background():  #to move background with camera
+      def __init__(self):
+          self.background = pygame.image.load('fon.png').convert()
+          self.background_rect = self.background.get_rect()
+
+          self.bgY1 = 0
+          self.bgX1 = 0
+
+          self.bgY2 = 0
+          self.bgX2 = self.background_rect.width
+
+          self.moving_speed = 5
+         
+      def update(self):
+        #self.moving_speed+=1
+        self.bgX1 -= self.moving_speed
+        self.bgX2 -= self.moving_speed
+        if self.bgX1 <= -self.background_rect.width:
+            self.bgX1 = self.background_rect.width
+        if self.bgX2 <= -self.background_rect.width:
+            self.bgX2 = self.background_rect.width
+             
+      def render(self):
+         screen.blit(self.background, (self.bgX1, self.bgY1))
+         screen.blit(self.background, (self.bgX2, self.bgY2))
 
 all_sprites = pygame.sprite.Group()
+mobs=pygame.sprite.Group()
 player = Player() #drawing the player
-all_sprites.add(player)  #drawing the player
+background=Background()
+all_sprites.add(player)#drawing the player
+for i in range(2):
+    m=Mob()
+    all_sprites.add(m)
+    mobs.add(m)
 
-camera_x=0
+
 
 running = True 
 while running:
 
-    if player.rect.x > width - width*0.75: #if it has reached 1/3 of the frame
-        camera_x += -player.speedx
-        
+    #keep loop running at the right speed
     clock.tick(fps)
+    
     #process input 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-            
+           
+                
     #update
-    all_sprites.update() #telling the every sprite whatever their update rule is 
-
+    background.update()
+    
     #draw/render
-    screen.fill(WHITE)
-    screen.blit(background, (0,0))
+    background.render()
+    all_sprites.update() #telling the every sprite whatever their update rule is 
     all_sprites.draw(screen)
-
+    
     pygame.display.flip()
     
 pygame.quit()
