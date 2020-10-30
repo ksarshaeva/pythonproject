@@ -144,13 +144,29 @@ class Mob(pygame.sprite.Sprite):
 class Shocker(pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
-        self.w = random.randrange(100, 160, 10)
+        self.w = random.randrange(100, 500, 10)
         self.image = pygame.Surface((self.w, 35))
         self.image.fill(WHITE)
         self.rect = self.image.get_rect()
         self.rect.x = random.randrange(width, width + 100, 10)
         self.rect.y = random.randrange(height-75,90,-10)
+
+    def update(self):
+        for shocker in shockers:
+            if shocker.rect.x + shocker.w < 1:
+                shocker.kill()
+        if not shockers:
+            self.create_new()
+
     
+    def create_new(self):
+        for i in range(2):
+            s = Shocker()
+            all_sprites.add(s)
+            shockers.add(s)
+
+        
+
 class Background():  #to move background with camera
       def __init__(self):
           self.background = pygame.image.load('fon.png').convert()
@@ -168,9 +184,7 @@ class Background():  #to move background with camera
             #moving shockers
             for shocker in shockers:
                 shocker.rect.left -= 2.7
-                #deleting the shocker that moved off the screen 
-                if shocker.rect.right <= 0:
-                    shocker.kill()
+                
         #moving the background picture
             self.bgX1 -= 2.7
             self.bgX2 -= 2.7
@@ -186,11 +200,8 @@ class Background():  #to move background with camera
 
 all_sprites = pygame.sprite.Group()
 shockers = pygame.sprite.Group() #group to hold all shockers, to do collisions
-if not shockers:
-    for i in range(2):
-        s = Shocker()
-        all_sprites.add(s)
-        shockers.add(s)
+
+s = Shocker().create_new()
         
 mobs=pygame.sprite.Group()
 player = Player() #drawing the player
