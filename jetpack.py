@@ -3,7 +3,7 @@ import random
 width = 1030
 height = 580
 floor = height - 50
-fps=60
+fps = 80
 
 name = "spritesheet.png"
 #colors
@@ -13,11 +13,6 @@ WHITE = (255,255,255)
 #initializing pygame and creating a window 
 pygame.init()
 pygame.mixer.init() #sounds
-"""
-pygame.font.init()
-welcome_font = pygame.font.SysFont('Comic Sans MS', 48)
-instruction_font = pygame.font.SysFont('Comic Sans MS', 22)
-"""
 screen=pygame.display.set_mode((width,height))
 pygame.display.set_caption("Jetpack") #changing naming of the window
 clock=pygame.time.Clock()
@@ -30,7 +25,7 @@ class Spritesheet:
     def get_image(self,x,y,w,h):  #opens the spritesheet that we need to use
         image = pygame.Surface((w,h))
         image.blit(self.spritesheet, (0,0),(x,y,w,h))
-        image = pygame.transform.scale(image,(75,120))
+        image = pygame.transform.scale(image,(65,110))
         return image
     
 class Player(pygame.sprite.Sprite):
@@ -67,15 +62,15 @@ class Player(pygame.sprite.Sprite):
             self.speedx = +2.7
             self.rect.x += self.speedx
         if keystate[pygame.K_w]:
-            self.speedy = -4  #flying up
+            self.speedy = -3  #flying up
             self.flying = True 
         elif not keystate[pygame.K_w]:
-            self.speedy += 0.2    #gravity fall
+            self.speedy += 0.1    #gravity fall
         self.rect.y += self.speedy
             
         #boundaries 
-        if self.rect.top < 100: #doesn't go above the ceiling 
-            self.rect.top = 100
+        if self.rect.top < 50: #doesn't go above the ceiling 
+            self.rect.top = 50
         if self.rect.bottom > height-50: #same for the floor
             self.rect.bottom = height-50
 
@@ -118,12 +113,12 @@ class Player(pygame.sprite.Sprite):
     def animate(self):
         now = pygame.time.get_ticks()
         if not self.flying:
-            if now - self.last_update > 90:
+            if now - self.last_update > 60:
                 self.last_update = now
                 self.current_frame = (self.current_frame + 1) % len(self.running_frame)
                 self.image = self.running_frame[self.current_frame]
         else:
-            if now  - self.last_update > 110:
+            if now  - self.last_update > 60:
                 self.last_update = now
                 self.current_frame = (self.current_frame +1) % len(self.flying_frame)
                 self.image = self.flying_frame[self.current_frame]
@@ -135,37 +130,40 @@ class Mob(pygame.sprite.Sprite):
         self.image.set_colorkey(BLACK)
         self.rect = self.image.get_rect()
         self.rect.x = width+10 #making it appear from outside of our window
-        self.rect.y = random.randrange(height-50,0,-10) #range for the location on the y axis 
-        self.speed = random.randrange(3,8)
+        self.rect.y = random.randrange(height-100,0,-10) #range for the location on the y axis 
+        self.speedx = random.randrange(4,8)
         
     def update(self):
-        self.rect.x -= self.speed
+        self.rect.x -= self.speedx
         
 class Shocker(pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
-        self.w = random.randrange(100, 500, 10)
-        self.image = pygame.Surface((self.w, 35))
+        self.compare = 0
+        self.w = random.randrange(200, 320, 15)
+        self.image = pygame.Surface((self.w, 35)) #assign width and height
         self.image.fill(WHITE)
         self.rect = self.image.get_rect()
-        self.rect.x = random.randrange(width, width + 100, 10)
-        self.rect.y = random.randrange(height-75,90,-10)
+        self.rect.x = random.randrange(width + 30, width + 80, 10)
+        self.rect.y = random.randrange(100, 200, 10)
 
     def update(self):
         for shocker in shockers:
             if shocker.rect.x + shocker.w < 1:
                 shocker.kill()
-        if not shockers:
+        if not shockers:#if the group is empty 
             self.create_new()
 
     
     def create_new(self):
         for i in range(2):
             s = Shocker()
+            if i == 0:
+                self.compare = s.rect.y
+            if i == 1:
+                s.rect.y = self.compare + 250
             all_sprites.add(s)
             shockers.add(s)
-
-        
 
 class Background():  #to move background with camera
       def __init__(self):
@@ -183,7 +181,7 @@ class Background():  #to move background with camera
         if player.rect.right >= width / 3:
             #moving shockers
             for shocker in shockers:
-                shocker.rect.left -= 2.7
+                shocker.rect.right -= 2.7
                 
         #moving the background picture
             self.bgX1 -= 2.7
@@ -200,9 +198,7 @@ class Background():  #to move background with camera
 
 all_sprites = pygame.sprite.Group()
 shockers = pygame.sprite.Group() #group to hold all shockers, to do collisions
-
 s = Shocker().create_new()
-        
 mobs=pygame.sprite.Group()
 player = Player() #drawing the player
 background=Background()
@@ -220,27 +216,11 @@ running = True
 while running:
    
     #keep loop running at the right speed
-    clock.tick(fps)
+    clock.tick(fps) 
+    #process input 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            running = False
-            """
-            waiting = False
-        if event.type == pygame.K_SPACE:
-            waiting = False
-               """ 
-    #process input 
-    #приветствующее окно не убирается при нажатии пробела,  игра замораживается и "(He отвечает)"
-        """
-    while waiting:
-        screen.fill(WHITE)
-        game_name = welcome_font.render("Jetpack", False, BLACK)
-        instruction1 = instruction_font.render("Press space to start", False, BLACK )
-        screen.blit(game_name,(int(width/2), int(height/4)))
-        screen.blit(instruction1,(int(width/2), int(height*3/4)))
-        pygame.display.flip()
-    """       
-                
+            running = False           
     #update
     background.update()
     
