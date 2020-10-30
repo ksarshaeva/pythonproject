@@ -5,7 +5,8 @@ height = 580
 floor = height - 50
 fps = 80
 
-name = "spritesheet.png"
+player_animation = "spritesheet.png"
+coin_animation = "coin.png"
 #colors
 BLACK=(0,0,0)
 WHITE = (255,255,255)
@@ -19,13 +20,15 @@ clock=pygame.time.Clock()
 
 #set up assets(art and sound)
 class Spritesheet:
-    def __init__(self,name):
+    def __init__(self,name, new_w, new_h):
         self.spritesheet = pygame.image.load(name).convert()
+        self.new_w = new_w
+        self.new_h = new_h
 
     def get_image(self,x,y,w,h):  #opens the spritesheet that we need to use
         image = pygame.Surface((w,h))
         image.blit(self.spritesheet, (0,0),(x,y,w,h))
-        image = pygame.transform.scale(image,(65,110))
+        image = pygame.transform.scale(image,(self.new_w, self.new_h))
         return image
     
 class Player(pygame.sprite.Sprite):
@@ -35,7 +38,7 @@ class Player(pygame.sprite.Sprite):
         self.flying = False
         self.alive = True 
         #for animation
-        self.looks = Spritesheet(name)
+        self.looks = Spritesheet(player_animation, 65, 110)
         self.current_frame = 0
         self.last_update = 0 #keeps track when the last sprite change happened 
         self.load_images()
@@ -47,11 +50,10 @@ class Player(pygame.sprite.Sprite):
         self.speedy = 0
         self.speedx = 0
 
-    def death(self):
+    def death(self): #it's not uset yet
         if not self.alive:
             self.speedy = 0
             self.speedx = 0
-
 
     def update(self):
         self.animate()
@@ -154,7 +156,6 @@ class Shocker(pygame.sprite.Sprite):
         if not shockers:#if the group is empty 
             self.create_new()
 
-    
     def create_new(self):
         for i in range(2):
             s = Shocker()
@@ -165,6 +166,9 @@ class Shocker(pygame.sprite.Sprite):
             all_sprites.add(s)
             shockers.add(s)
 
+#class Coins(pygame.sprite.Sprite):
+    #def __init__(self):
+        
 class Background():  #to move background with camera
       def __init__(self):
           self.background = pygame.image.load('fon.png').convert()
