@@ -17,12 +17,11 @@ pygame.mixer.init() #sounds
 screen=pygame.display.set_mode((width,height))
 pygame.display.set_caption("Jetpack") #changing naming of the window
 clock=pygame.time.Clock()
-
+"""
 def choose_spawn():
     answer = random.choice(True, False)
     print(answer)
-    return answer
-
+    return answer"""
 #set up assets(art and sound)
 class Spritesheet:
     def __init__(self,name, new_w, new_h):
@@ -154,20 +153,17 @@ class Shocker(pygame.sprite.Sprite):
         self.rect.y = random.randrange(100, 200, 20)
 
     def update(self):
-        if not shockers:
-            if choose_spawn(): #if the group is empty 
-                self.create_new()
-
         for shocker in shockers:
             if shocker.rect.x + shocker.w < 1: #kill the sprite if it moved beyond our screen 
                 shocker.kill()
 
+        if not shockers:
+            self.create_new()
+
     def create_new(self):
-        s = Shocker()
         for i in range(2):
+            s = Shocker()
             if i == 0:
-                all_sprites.add(s)
-                shockers.add(s)
                 self.compare = s.rect.y
             if i == 1:
                 """ work on this 
@@ -175,8 +171,8 @@ class Shocker(pygame.sprite.Sprite):
 
                 """
                 s.rect.y = self.compare + 250
-                all_sprites.add(s)
-                shockers.add(s)
+            all_sprites.add(s)
+            shockers.add(s)
             """ need to work on this 
         if choose_spawn():#create coins after shockers to fill the empty space
             c = Coins((self.compare + 35) + 25, (self.compare + 250) - 25)
