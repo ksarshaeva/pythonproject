@@ -18,7 +18,7 @@ screen=pygame.display.set_mode((width,height))
 pygame.display.set_caption("Jetpack") #changing naming of the window
 clock=pygame.time.Clock()
 """
-def choose_spawn():
+def choose_spawn(): #чтобы игра не была скучной, и шокеры иногда появлялись иногда нет, и то же самое для монеток
     answer = random.choice(True, False)
     print(answer)
     return answer"""
@@ -181,8 +181,8 @@ class Shocker(pygame.sprite.Sprite):
 """
 class Coins(pygame.sprite.Sprite):
     def __init__(self, upperlimit, lowerlimit):
-        self.indent_ceiling = 90
-        self.indent_between = 10 
+        self.indent_ceiling = 90 #отступ сверху 
+        self.indent_between = 10 #отступ между каждым рядом и строкой 
         self.sides = 30 #width and height 
         if upperlimit != 0 and lowerlimit != 0: #if we spawn then in between shockers 
             self.rows = random.randrange()
@@ -205,7 +205,7 @@ class Coins(pygame.sprite.Sprite):
         self.image = self.coin_frame[0] #how that sprite looks like initially without animation
 
     def create_new():
-        c = Coins(, )
+        c = Coins(, ) #из-за того что теперь там может быть лимиты, здесь это идет цикл без конца
             
     def load_images(self):
         self.coin_frame = [ self.looks.get_image(0,0,84,84),
