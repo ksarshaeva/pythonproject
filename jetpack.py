@@ -57,7 +57,7 @@ class Player(pygame.sprite.Sprite):
         self.image = self.running_frame[0]#how that sprite looks like initially without animation
         self.rect = self.image.get_rect()#rectangle that incloses the sprite
         self.radius= int(self.rect.width/2)
-        #pygame.draw.circle(self.image,WHITE,self.rect.center,self.radius)
+        self.mask = pygame.mask.from_surface(self.image)
         self.rect.centerx = 140
         self.rect.bottom = height-50
         self.speedy = 0
@@ -192,13 +192,16 @@ class Shocker(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.x = random.randrange(width + 30, width + 80, 10)
         self.rect.y = random.randrange(100, 200, 20)
-
+        
         #for animation
         self.looks = Spritesheet(shocker_animation, self.w, 35)
         self.current_frame = 0
         self.last_update = 0 #keeps track when the last sprite change happened 
         self.load_images()
         self.image = self.shocker_frame[0]
+
+        #for collision
+        self.mask = pygame.mask.from_surface(self.image)
 
     def update(self):
         self.animate()
@@ -273,6 +276,15 @@ class Coins(pygame.sprite.Sprite):
         self.load_images()
         self.image = self.coin_frame[0] #how that sprite looks like initially without animation
 
+    def update(self):
+        self.animate()
+        for coin in coins:
+            if coin.rect.x + coin.w < 1: #kill the sprite if it moved beyond our screen 
+                coin.kill()
+
+        if not coins: #and random.choice([True, False])
+            self.create_new()
+
     def create_new():
         c = Coins(, ) #из-за того что теперь там может быть лимиты, здесь это идет цикл без конца
             
@@ -339,8 +351,7 @@ def show_go_screen():
             if event.type == pygame.KEYDOWN:
                 waiting = False
         
-waiting = False
-game_over = True
+
 
 all_sprites = pygame.sprite.Group()
 mobs=pygame.sprite.Group()
@@ -355,7 +366,8 @@ for i in range(2):
     mobs.add(m)
 
 
-
+waiting = False
+game_over = True
 running = True 
 while running:
     if game_over:
@@ -379,10 +391,7 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False    
-
-    hits = pygame.sprite.spritecollide(player, shockers, False)
-    if hits:
-        game_over = True        
+        
     #update
     background.update()
     
@@ -393,6 +402,10 @@ while running:
     hits=pygame.sprite.spritecollide(player,mobs,False,pygame.sprite.collide_circle)
     if hits:
         running=False
+
+    hits = pygame.sprite.spritecollide(player, shockers, False, pygame.sprite.collide_mask)
+    if hits:
+        game_over = True
     all_sprites.draw(screen)
     
     pygame.display.flip()
