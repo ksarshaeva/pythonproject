@@ -5,6 +5,7 @@ height = 580
 floor = height - 50
 fps = 80
 
+shocker_animation = "lightning.png"
 player_animation = "spritesheet.png"
 coin_animation = "coin.png"
 #colors
@@ -147,17 +148,24 @@ class Shocker(pygame.sprite.Sprite):
         pygame.sprite.Sprite.__init__(self)
         self.w = random.randrange(200, 320, 15)
         self.image = pygame.Surface((self.w, 35)) #assign width and height
-        self.image.fill(WHITE)
         self.rect = self.image.get_rect()
         self.rect.x = random.randrange(width + 30, width + 80, 10)
         self.rect.y = random.randrange(100, 200, 20)
 
+        #for animation
+        self.looks = Spritesheet(shocker_animation, self.w, 35)
+        self.current_frame = 0
+        self.last_update = 0 #keeps track when the last sprite change happened 
+        self.load_images()
+        self.image = self.shocker_frame[0]
+
     def update(self):
+        self.animate()
         for shocker in shockers:
             if shocker.rect.x + shocker.w < 1: #kill the sprite if it moved beyond our screen 
                 shocker.kill()
 
-        if not shockers:
+        if not shockers: #and random.choice([True, False])
             self.create_new()
 
     def create_new(self):
@@ -178,6 +186,26 @@ class Shocker(pygame.sprite.Sprite):
             c = Coins((self.compare + 35) + 25, (self.compare + 250) - 25)
             """
 
+    def load_images(self):
+        self.shocker_frame = [self.looks.get_image(0,19,513,95),
+                              self.looks.get_image(0,147,513,95),
+                              self.looks.get_image(0,247,513,95),
+                              self.looks.get_image(0,403,513,95),
+                              self.looks.get_image(0,531,513,95),
+                              self.looks.get_image(0,659,513,95),
+                              self.looks.get_image(0,787,513,95),
+                              self.looks.get_image(0,915,513,95)]
+        for frame in self.shocker_frame:
+            frame.set_colorkey(BLACK)#ignore black background
+
+    
+    def animate(self):
+        now = pygame.time.get_ticks()
+        if now - self.last_update > 60:
+            self.last_update = now
+            self.current_frame = (self.current_frame + 1) % len(self.shocker_frame)
+            self.image = self.shocker_frame[self.current_frame]
+        
 """
 class Coins(pygame.sprite.Sprite):
     def __init__(self, upperlimit, lowerlimit):
