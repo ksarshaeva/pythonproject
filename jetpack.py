@@ -2,12 +2,13 @@ import pygame
 import random
 width = 1030
 height = 580
-floor = height - 50
 fps = 80
 
 shocker_animation = "lightning.png"
 player_animation = "spritesheet.png"
 coin_animation = "coin.png"
+mob_animation = "rocket_sprite.png"
+
 #colors
 BLACK=(0,0,0)
 WHITE = (255,255,255)
@@ -33,8 +34,8 @@ def draw_text(where, text, size, x, y):
 class Spritesheet:
     def __init__(self,name, new_w, new_h):
         self.spritesheet = pygame.image.load(name).convert()
-        self.new_w = new_w
-        self.new_h = new_h
+        self.new_w=new_w
+        self.new_h=new_h
 
     def get_image(self,x,y,w,h):  #opens the spritesheet that we need to use
         image = pygame.Surface((w,h))
@@ -54,10 +55,11 @@ class Player(pygame.sprite.Sprite):
         self.last_update = 0 #keeps track when the last sprite change happened 
         self.load_images()
         self.image = self.running_frame[0]#how that sprite looks like initially without animation
-        
         self.rect = self.image.get_rect()#rectangle that incloses the sprite
+        self.radius= int(self.rect.width/2)
+        #pygame.draw.circle(self.image,WHITE,self.rect.center,self.radius)
         self.rect.centerx = 140
-        self.rect.bottom = floor
+        self.rect.bottom = height-50
         self.speedy = 0
         self.speedx = 0
 
@@ -87,9 +89,8 @@ class Player(pygame.sprite.Sprite):
         if self.rect.bottom > height-50: #same for the floor
             self.rect.bottom = height-50
 
-        if abs(self.rect.bottom - floor) < 10:
+        if abs(self.rect.bottom - (height -50)) < 10:
             self.flying = False
-            
     def load_images(self):
         self.running_frame = [self.looks.get_image(198,0,365,552),
                               self.looks.get_image(889,0,365,552),
@@ -139,16 +140,50 @@ class Player(pygame.sprite.Sprite):
 class Mob(pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
-        self.image = pygame.image.load('rocket.png').convert()
+        self.looks = Spritesheet(mob_animation,100,62)
+        self.current_frame = 0
+        self.last_update = 0 #keeps track when the last sprite change happened 
+        self.load_images()
+        self.image = self.flying_frames[0]
         self.image.set_colorkey(BLACK)
         self.rect = self.image.get_rect()
-        self.rect.x = width+10 #making it appear from outside of our window
-        self.rect.y = random.randrange(height-100,0,-10) #range for the location on the y axis 
-        self.speedx = random.randrange(4,8)
+        self.radius= int(self.rect.width*0.7/2)
+        #pygame.draw.circle(self.image,WHITE,self.rect.center,self.radius)
+        self.rect.x=width+20
+        self.rect.y=random.randrange(height-70,0,-10)
+        self.speedx=random.randrange(5,10)
+
+    def load_images(self):
+        self.flying_frames = [self.looks.get_image(155,20,153,82),
+                                self.looks.get_image(155,103,153,82),
+                                self.looks.get_image(155,192,153,78),
+                                self.looks.get_image(155,294,153,82)]
+        for frame in self.flying_frames:
+            frame.set_colorkey(BLACK)
+
         
     def update(self):
-        self.rect.x -= self.speedx
+        self.animate()
+        self.rect.x-=self.speedx
+        if self.rect.left<0:
+            self.rect.x=width+20
+            self.rect.y=random.randrange(height-50,0,-10)
+            self.speedx=random.randrange(5,10)
+
+            
+    def animate(self):
+        now=pygame.time.get_ticks()
+        if now-self.last_update>150:
+            self.last_update=now
+            self.current_frame = (self.current_frame + 1)% len(self.flying_frames)
+            self.image=self.flying_frames[self.current_frame]
         
+#rocket fly1=(155,20,153,82)
+#rocket fly2=(155,103,153,82)
+#rocket fly3=(155,192,153,78)
+#rocket fly4=(155,294,153,82)
+
+
 class Shocker(pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
@@ -224,7 +259,7 @@ class Coins(pygame.sprite.Sprite):
         else:
             self.rows = random.randrange(1, 6, 1)
             self.columns = random.randrange(1, 11, 2)
-        
+
         self.image = pygame.Surface((self.sides, self.sides)) #assign width and height
         self.image.fill(BLACK)
         self.rect = self.image.get_rect()
@@ -266,7 +301,6 @@ class Background():  #to move background with camera
 
           self.bgY1 = 0
           self.bgX1 = 0
-
           self.bgY2 = 0
           self.bgX2 = self.background_rect.width
          
@@ -307,7 +341,22 @@ def show_go_screen():
         
 waiting = False
 game_over = True
-running = True
+
+all_sprites = pygame.sprite.Group()
+mobs=pygame.sprite.Group()
+player = Player() #drawing the player
+background=Background()
+mob_img=pygame.image.load('rocket.png').convert()
+all_sprites.add(player)#drawing the player
+
+for i in range(2):
+    m=Mob()
+    all_sprites.add(m)
+    mobs.add(m)
+
+
+
+running = True 
 while running:
     if game_over:
         show_go_screen()
@@ -340,6 +389,10 @@ while running:
     #draw/render
     background.render()
     all_sprites.update() #telling the every sprite whatever their update rule is 
+    #check to see if a mob hit the player
+    hits=pygame.sprite.spritecollide(player,mobs,False,pygame.sprite.collide_circle)
+    if hits:
+        running=False
     all_sprites.draw(screen)
     
     pygame.display.flip()
