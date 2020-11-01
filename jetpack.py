@@ -23,6 +23,12 @@ def choose_spawn(): #чтобы игра не была скучной, и шок
     answer = random.choice(True, False)
     print(answer)
     return answer"""
+def draw_text(where, text, size, x, y):
+    font = pygame.font.SysFont("Comis Sans MS", size)
+    put = font.render(text, True, BLACK)
+    text_rect = put.get_rect()
+    text_rect.center = (x, y)
+    screen.blit(put, text_rect)
 #set up assets(art and sound)
 class Spritesheet:
     def __init__(self,name, new_w, new_h):
@@ -283,33 +289,51 @@ class Background():  #to move background with camera
          screen.blit(self.background, (self.bgX1, self.bgY1))
          screen.blit(self.background, (self.bgX2, self.bgY2))
 
-
-all_sprites = pygame.sprite.Group()
-shockers = pygame.sprite.Group() #group to hold all shockers, to do collisions
-coins = pygame.sprite.Group()
-s = Shocker().create_new()
-mobs=pygame.sprite.Group()
-player = Player() #drawing the player
-background=Background()
-all_sprites.add(player)#drawing the player
-for i in range(2):
-    m=Mob()
-    all_sprites.add(m)
-    mobs.add(m)
-
-
-
-
-#waiting = True 
+def show_go_screen():
+    screen.fill(WHITE)
+    draw_text(screen, "Jetpack!", 64, width / 2, height / 4)
+    draw_text(screen, "press W to fly up", 22, width / 2, height / 2)
+    draw_text(screen, "Press a key to begin", 18, width / 2, height *3/4)
+    pygame.display.flip()
+    waiting = True 
+    while waiting:
+        pygame.init()
+        clock.tick(fps)
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+            if event.type == pygame.KEYDOWN:
+                waiting = False
+        
+waiting = False
+game_over = True
 running = True
 while running:
-   
+    if game_over:
+        show_go_screen()
+        game_over = False
+        all_sprites = pygame.sprite.Group()
+        shockers = pygame.sprite.Group() #group to hold all shockers, to do collisions
+        coins = pygame.sprite.Group()
+        s = Shocker().create_new()
+        mobs=pygame.sprite.Group()
+        player = Player() #drawing the player
+        background=Background()
+        all_sprites.add(player)#drawing the player
+        for i in range(2):
+            m=Mob()
+            all_sprites.add(m)
+            mobs.add(m)
     #keep loop running at the right speed
     clock.tick(fps) 
     #process input 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            running = False           
+            running = False    
+
+    hits = pygame.sprite.spritecollide(player, shockers, False)
+    if hits:
+        game_over = True        
     #update
     background.update()
     
