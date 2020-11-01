@@ -2,10 +2,13 @@ import pygame
 import random
 width = 1030
 height = 580
-fps=80
+fps = 80
 
+shocker_animation = "lightning.png"
 player_animation = "spritesheet.png"
+coin_animation = "coin.png"
 mob_animation = "rocket_sprite.png"
+
 #colors
 BLACK=(0,0,0)
 WHITE = (255,255,255)
@@ -16,7 +19,17 @@ pygame.mixer.init() #sounds
 screen=pygame.display.set_mode((width,height))
 pygame.display.set_caption("Jetpack") #changing naming of the window
 clock=pygame.time.Clock()
-
+"""
+def choose_spawn(): #чтобы игра не была скучной, и шокеры иногда появлялись иногда нет, и то же самое для монеток
+    answer = random.choice(True, False)
+    print(answer)
+    return answer"""
+def draw_text(where, text, size, x, y):
+    font = pygame.font.SysFont("Comis Sans MS", size)
+    put = font.render(text, True, BLACK)
+    text_rect = put.get_rect()
+    text_rect.center = (x, y)
+    screen.blit(put, text_rect)
 #set up assets(art and sound)
 class Spritesheet:
     def __init__(self,name, new_w, new_h):
@@ -27,7 +40,7 @@ class Spritesheet:
     def get_image(self,x,y,w,h):  #opens the spritesheet that we need to use
         image = pygame.Surface((w,h))
         image.blit(self.spritesheet, (0,0),(x,y,w,h))
-        image = pygame.transform.scale(image,(self.new_w,self.new_h))
+        image = pygame.transform.scale(image,(self.new_w, self.new_h))
         return image
     
 class Player(pygame.sprite.Sprite):
@@ -35,13 +48,13 @@ class Player(pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)#built in function,without which sprite will not work
         self.flying = False
-        self.alive=True
+        self.alive = True 
         #for animation
-        self.looks = Spritesheet(player_animation,65,110)
+        self.looks = Spritesheet(player_animation, 65, 110)
         self.current_frame = 0
         self.last_update = 0 #keeps track when the last sprite change happened 
         self.load_images()
-        self.image = self.running_frame[0]#how that sprite looks like
+        self.image = self.running_frame[0]#how that sprite looks like initially without animation
         self.rect = self.image.get_rect()#rectangle that incloses the sprite
         self.radius= int(self.rect.width/2)
         #pygame.draw.circle(self.image,WHITE,self.rect.center,self.radius)
@@ -50,19 +63,24 @@ class Player(pygame.sprite.Sprite):
         self.speedy = 0
         self.speedx = 0
 
+    def death(self): #it's not uset yet
+        if not self.alive:
+            self.speedy = 0
+            self.speedx = 0
+
     def update(self):
         self.animate()
         keystate=pygame.key.get_pressed() #gives a bool list of keys that are down(pressed)
-        if self.rect.right>=width/3:
-            self.speedx=0
+        if player.rect.right >= width / 3:
+            self.speedx = 0
         else:
-            self.speedx = +3
+            self.speedx = +2.7
             self.rect.x += self.speedx
         if keystate[pygame.K_w]:
-            self.speedy = -5  #flying up
+            self.speedy = -3  #flying up
             self.flying = True 
         elif not keystate[pygame.K_w]:
-            self.speedy += 0.4    #gravity fall
+            self.speedy += 0.1    #gravity fall
         self.rect.y += self.speedy
             
         #boundaries 
@@ -70,6 +88,8 @@ class Player(pygame.sprite.Sprite):
             self.rect.top = 50
         if self.rect.bottom > height-50: #same for the floor
             self.rect.bottom = height-50
+
+        if abs(self.rect.bottom - (height -50)) < 10:
             self.flying = False
     def load_images(self):
         self.running_frame = [self.looks.get_image(198,0,365,552),
@@ -107,17 +127,16 @@ class Player(pygame.sprite.Sprite):
     def animate(self):
         now = pygame.time.get_ticks()
         if not self.flying:
-            if now - self.last_update > 90:
+            if now - self.last_update > 60:
                 self.last_update = now
                 self.current_frame = (self.current_frame + 1) % len(self.running_frame)
                 self.image = self.running_frame[self.current_frame]
         else:
-            if now  - self.last_update > 110:
+            if now  - self.last_update > 60:
                 self.last_update = now
                 self.current_frame = (self.current_frame +1) % len(self.flying_frame)
                 self.image = self.flying_frame[self.current_frame]
         
-    
 class Mob(pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
@@ -133,7 +152,6 @@ class Mob(pygame.sprite.Sprite):
         self.rect.x=width+20
         self.rect.y=random.randrange(height-70,0,-10)
         self.speedx=random.randrange(5,10)
-
 
     def load_images(self):
         self.flying_frames = [self.looks.get_image(155,20,153,82),
@@ -164,7 +182,118 @@ class Mob(pygame.sprite.Sprite):
 #rocket fly2=(155,103,153,82)
 #rocket fly3=(155,192,153,78)
 #rocket fly4=(155,294,153,82)
+
+
+class Shocker(pygame.sprite.Sprite):
+    def __init__(self):
+        pygame.sprite.Sprite.__init__(self)
+        self.w = random.randrange(200, 320, 15)
+        self.image = pygame.Surface((self.w, 35)) #assign width and height
+        self.rect = self.image.get_rect()
+        self.rect.x = random.randrange(width + 30, width + 80, 10)
+        self.rect.y = random.randrange(100, 200, 20)
+
+        #for animation
+        self.looks = Spritesheet(shocker_animation, self.w, 35)
+        self.current_frame = 0
+        self.last_update = 0 #keeps track when the last sprite change happened 
+        self.load_images()
+        self.image = self.shocker_frame[0]
+
+    def update(self):
+        self.animate()
+        for shocker in shockers:
+            if shocker.rect.x + shocker.w < 1: #kill the sprite if it moved beyond our screen 
+                shocker.kill()
+
+        if not shockers: #and random.choice([True, False])
+            self.create_new()
+
+    def create_new(self):
+        for i in range(2):
+            s = Shocker()
+            if i == 0:
+                self.compare = s.rect.y
+            if i == 1:
+                """ work on this 
+                if choose_spawn():#create coins in between the shockers
+
+                """
+                s.rect.y = self.compare + 250
+            all_sprites.add(s)
+            shockers.add(s)
+            """ need to work on this 
+        if choose_spawn():#create coins after shockers to fill the empty space
+            c = Coins((self.compare + 35) + 25, (self.compare + 250) - 25)
+            """
+
+    def load_images(self):
+        self.shocker_frame = [self.looks.get_image(0,19,513,95),
+                              self.looks.get_image(0,147,513,95),
+                              self.looks.get_image(0,247,513,95),
+                              self.looks.get_image(0,403,513,95),
+                              self.looks.get_image(0,531,513,95),
+                              self.looks.get_image(0,659,513,95),
+                              self.looks.get_image(0,787,513,95),
+                              self.looks.get_image(0,915,513,95)]
+        for frame in self.shocker_frame:
+            frame.set_colorkey(BLACK)#ignore black background
+
+    
+    def animate(self):
+        now = pygame.time.get_ticks()
+        if now - self.last_update > 60:
+            self.last_update = now
+            self.current_frame = (self.current_frame + 1) % len(self.shocker_frame)
+            self.image = self.shocker_frame[self.current_frame]
         
+"""
+class Coins(pygame.sprite.Sprite):
+    def __init__(self, upperlimit, lowerlimit):
+        self.indent_ceiling = 90 #отступ сверху 
+        self.indent_between = 10 #отступ между каждым рядом и строкой 
+        self.sides = 30 #width and height 
+        if upperlimit != 0 and lowerlimit != 0: #if we spawn then in between shockers 
+            self.rows = random.randrange()
+            self.columns = random.randrange()
+        else:
+            self.rows = random.randrange(1, 6, 1)
+            self.columns = random.randrange(1, 11, 2)
+
+        self.image = pygame.Surface((self.sides, self.sides)) #assign width and height
+        self.image.fill(BLACK)
+        self.rect = self.image.get_rect()
+        #self.rect.x = random.randrange(width + 30, width + 80, 10) #i'm not sure how to this 
+        self.rect.y = random.randrange(self.indent_ceiling, self.indent_ceiling + 60, 10)
+
+        #for animation
+        self.looks = Spritesheet(coin_animation, self.sides, self.sides)
+        self.current_frame = 0
+        self.last_update = 0 #keeps track when the last sprite change happened 
+        self.load_images()
+        self.image = self.coin_frame[0] #how that sprite looks like initially without animation
+
+    def create_new():
+        c = Coins(, ) #из-за того что теперь там может быть лимиты, здесь это идет цикл без конца
+            
+    def load_images(self):
+        self.coin_frame = [ self.looks.get_image(0,0,84,84),
+                            self.looks.get_image(84,0,84,84),
+                            self.looks.get_image(168,0,84,84),
+                            self.looks.get_image(252,0,84,84),
+                            self.looks.get_image(336,0,84,84),
+                            self.looks.get_image(420,0,84,84)]
+        for frame in self.coin_frame:
+            frame.set_colorkey(BLACK) #ignore black background
+
+    def animate(self):
+        now = pygame.time.get_ticks()
+        if now - self.last_update > 60:
+            self.last_update = now
+            self.current_frame = (self.current_frame + 1) % len(self.coin_frame)
+            self.image = self.coin_frame[self.current_frame]
+"""
+
 class Background():  #to move background with camera
       def __init__(self):
           self.background = pygame.image.load('fon.png').convert()
@@ -174,21 +303,44 @@ class Background():  #to move background with camera
           self.bgX1 = 0
           self.bgY2 = 0
           self.bgX2 = self.background_rect.width
-          
          
       def update(self):
-          
-          if player.rect.right>= width/3:
-              self.bgX1 -= 3
-              self.bgX2 -= 3
-          if self.bgX1 <= -self.background_rect.width:
-              self.bgX1 = self.background_rect.width
-          if self.bgX2 <= -self.background_rect.width:
-              self.bgX2 = self.background_rect.width
-             
+
+        if player.rect.right >= width / 3:
+            #moving shockers
+            for shocker in shockers:
+                shocker.rect.right -= 2.7
+                
+        #moving the background picture
+            self.bgX1 -= 2.7
+            self.bgX2 -= 2.7
+        if self.bgX1 <= -self.background_rect.width:
+            self.bgX1 = self.background_rect.width
+        if self.bgX2 <= -self.background_rect.width:
+            self.bgX2 = self.background_rect.width
+
       def render(self):
          screen.blit(self.background, (self.bgX1, self.bgY1))
          screen.blit(self.background, (self.bgX2, self.bgY2))
+
+def show_go_screen():
+    screen.fill(WHITE)
+    draw_text(screen, "Jetpack!", 64, width / 2, height / 4)
+    draw_text(screen, "press W to fly up", 22, width / 2, height / 2)
+    draw_text(screen, "Press a key to begin", 18, width / 2, height *3/4)
+    pygame.display.flip()
+    waiting = True 
+    while waiting:
+        pygame.init()
+        clock.tick(fps)
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+            if event.type == pygame.KEYDOWN:
+                waiting = False
+        
+waiting = False
+game_over = True
 
 all_sprites = pygame.sprite.Group()
 mobs=pygame.sprite.Group()
@@ -206,16 +358,31 @@ for i in range(2):
 
 running = True 
 while running:
-
+    if game_over:
+        show_go_screen()
+        game_over = False
+        all_sprites = pygame.sprite.Group()
+        shockers = pygame.sprite.Group() #group to hold all shockers, to do collisions
+        coins = pygame.sprite.Group()
+        s = Shocker().create_new()
+        mobs=pygame.sprite.Group()
+        player = Player() #drawing the player
+        background=Background()
+        all_sprites.add(player)#drawing the player
+        for i in range(2):
+            m=Mob()
+            all_sprites.add(m)
+            mobs.add(m)
     #keep loop running at the right speed
-    clock.tick(fps)
-    
+    clock.tick(fps) 
     #process input 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            running = False
-           
-                
+            running = False    
+
+    hits = pygame.sprite.spritecollide(player, shockers, False)
+    if hits:
+        game_over = True        
     #update
     background.update()
     
