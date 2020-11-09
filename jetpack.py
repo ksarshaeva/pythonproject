@@ -5,9 +5,6 @@ height = 580
 fps = 80
 points = 0
 
-#to see how many of the we have passed
-counter = [0,0]#shocker, mob
-
 #colors
 BLACK=(0,0,0)
 WHITE = (255,255,255)
@@ -31,7 +28,7 @@ shocker_animation = "lightning.png"
 player_animation = "spritesheet.png"
 coin_animation = "coin.png"
 mob_animation = "rocket_sprite.png"
-jetpack_sound = pygame.mixer.Sound(".wav")
+#jetpack_sound = pygame.mixer.Sound(".wav")
 rocket_sound = pygame.mixer.Sound("missile.wav")
 shocker_sound = pygame.mixer.Sound("zapper.wav")
 get_coin_sound = pygame.mixer.Sound("coin.wav")
@@ -83,8 +80,8 @@ class Player(pygame.sprite.Sprite):
             self.speedy += 0.1    #gravity fall
         self.rect.y += self.speedy
 
-        if self.flying:
-            jetpack_sound.play()
+        #if self.flying:
+            #jetpack_sound.play()
             
         #boundaries 
         if self.rect.top < 50: #doesn't go above the ceiling 
@@ -209,13 +206,19 @@ class Shocker(pygame.sprite.Sprite):
 
         self.counter = 0
 
+        #for coins 
+        self.create_coins = False                
+
     def update(self):
         self.animate()
         for shocker in shockers:
             if shocker.rect.x + shocker.w < 1: #kill the sprite if it moved beyond our screen 
                 shocker.kill()
-                counter[0] = counter[0] + 1 #shows how many shockers we have passed successfully 
-                check_shocker = True 
+
+            if shocker.rect.right > 1030:
+                self.create_coins = False 
+            else:
+                self.create_coins = True 
 
         if not shockers: #and random.choice([True, False])
             self.create_new()
@@ -229,16 +232,10 @@ class Shocker(pygame.sprite.Sprite):
             if i == 0:
                 self.compare = s.rect.y
             if i == 1:
-                """ work on this 
-                if choose_spawn():#create coins in between the shockers
-
-                """
                 s.rect.y = self.compare + 250
             all_sprites.add(s)
             shockers.add(s)
-            #spawn after the shockers
-            #c = Coins((self.compare + 35) + 25, (self.compare + 250) - 25)
-
+            
     def load_images(self):
         self.shocker_frame = [self.looks.get_image(0,19,513,95),
                               self.looks.get_image(0,147,513,95),
@@ -257,45 +254,28 @@ class Shocker(pygame.sprite.Sprite):
             self.last_update = now
             self.current_frame = (self.current_frame + 1) % len(self.shocker_frame)
             self.image = self.shocker_frame[self.current_frame]
-        
-"""
-class Coins(pygame.sprite.Sprite):
-    def __init__(self, upperlimit, lowerlimit):
-        self.indent_ceiling = 90 #отступ сверху 
-        self.indent_between = 10 #отступ между каждым рядом и строкой 
-        self.sides = 30 #width and height 
-        if upperlimit != 0 and lowerlimit != 0: #if we spawn them in between shockers 
-            self.rows = random.randrange()
-            self.columns = random.randrange()
-        else:
-            self.rows = random.randrange(1, 6, 1)
-            self.columns = random.randrange(1, 11, 2)
 
+class Coins(pygame.sprite.Sprite):
+    def __init__(self, x, y):
         #for animation
-        self.looks = Spritesheet(coin_animation, self.sides, self.sides)
+        self.looks = Spritesheet(coin_animation, 30, 30)
         self.current_frame = 0
         self.last_update = 0 #keeps track when the last sprite change happened 
         self.load_images()
-        self.image = self.coin_frame[0] #how that sprite looks like initially without animation
+        self.image = self.coin_frame[0] #how that sprite looks like initially without animation       
 
         self.rect = self.image.get_rect()
-        #self.rect.x = random.randrange(width + 30, width + 80, 10) #i'm not sure how to this 
-        self.rect.y = random.randrange(self.indent_ceiling, self.indent_ceiling + 60, 10)
-
-        
+        self.rect.x = x
+        self.rect.y = y
 
     def update(self):
-        self.animate()
         for coin in coins:
             if coin.rect.x + coin.w < 1: #kill the sprite if it moved beyond our screen 
                 coin.kill()
 
-        if not coins: #and random.choice([True, False])
-            self.create_new()
+        #if not coins: #and random.choice([True, False])
+            #self.create_new()
 
-    def create_new():
-        c = Coins(, ) #из-за того что теперь там может быть лимиты, здесь это идет цикл без конца
-            
     def load_images(self):
         self.coin_frame = [ self.looks.get_image(0,0,84,84),
                             self.looks.get_image(84,0,84,84),
@@ -312,7 +292,6 @@ class Coins(pygame.sprite.Sprite):
             self.last_update = now
             self.current_frame = (self.current_frame + 1) % len(self.coin_frame)
             self.image = self.coin_frame[self.current_frame]
-"""
 
 class Background():  #to move background with camera
       def __init__(self):
@@ -362,16 +341,30 @@ def show_home_screen():
                 waiting = False
         
 all_sprites = pygame.sprite.Group()
-mobs=pygame.sprite.Group()
+mobs = pygame.sprite.Group()
+coins = pygame.sprite.Group()
 player = Player() #drawing the player
-background=Background()
-mob_img=pygame.image.load('rocket.png').convert()
+background = Background()
+mob_img = pygame.image.load('rocket.png').convert()
 all_sprites.add(player)#drawing the player
 
 for i in range(2):
-    m=Mob()
+    m = Mob()
     all_sprites.add(m)
     mobs.add(m)
+
+if Shocker().create_coins == True:
+    num_rows = random.randrange(1, 6, 1)
+    num_columns = random.randrange(1, 11, 2)
+    x_start = random.randrange(width + 30, width + 80, 10)
+    y_start = int((490 - num_rows*30 + (num_rows-1)*10) * 1/ 3)
+    
+    for i in range(num_rows):
+        for j in range(num_columns):
+            c = Coins(x_start + j * 40, y_start + i * 40)
+            all_sprites.add(c)
+            coins.add(c)
+
 
 check_shocker = False
 waiting = False
