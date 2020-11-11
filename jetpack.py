@@ -148,11 +148,11 @@ class Mob(pygame.sprite.Sprite):
         self.image = self.flying_frames[0]
         self.image.set_colorkey(BLACK)
         self.rect = self.image.get_rect()
-        self.radius= int(self.rect.width*0.7/2)
+        self.radius = int(self.rect.width*0.7/2)
         #pygame.draw.circle(self.image,WHITE,self.rect.center,self.radius)
-        self.rect.x=width+20
-        self.rect.y=random.randrange(height-70,0,-10)
-        self.speedx=random.randrange(5,10)
+        self.rect.x = width+20
+        self.rect.y = random.randrange(height-70,0,-10)
+        self.speedx = random.randrange(5,10)
 
     def load_images(self):
         self.flying_frames = [self.looks.get_image(155,20,153,82),
@@ -203,18 +203,7 @@ class Shocker(pygame.sprite.Sprite):
 
         #for collision
         self.mask = pygame.mask.from_surface(self.image)
-
-        self.counter = 0
-
-        #for coins 
-        self.create_coins = self.check_both(shockers)  
-
-    def check_both(this):
-        for i in this:
-            if i.rect.right < 1030:
-                return True 
-            return False 
-
+        
     def update(self):
         self.animate()
         for shocker in shockers:
@@ -224,8 +213,8 @@ class Shocker(pygame.sprite.Sprite):
         if not shockers: #and random.choice([True, False])
             self.create_new()
 
-        #while shockers:
-            #shocker_sound.play()
+        if shockers:
+            positions()
 
     def create_new(self):
         for i in range(2):
@@ -256,6 +245,19 @@ class Shocker(pygame.sprite.Sprite):
             self.current_frame = (self.current_frame + 1) % len(self.shocker_frame)
             self.image = self.shocker_frame[self.current_frame]
 
+def positions():
+    num_rows = random.randrange(1, 6, 1)
+    num_columns = random.randrange(1, 11, 2)
+    x_start = random.randrange(width + 30, width + 80, 10)
+    y_start = int((490 - num_rows * 30 + (num_rows - 1) * 10) * 1/ 3) #делим пустое от монеток пространство на три, одна часть над монетами, два под
+    coordinates = []
+    for i in range(num_rows):
+        for j in range(num_columns):
+            c = Coins(x_start + j * 40, y_start + i * 40)
+            all_sprites.add(c)
+            coins.add(c)
+
+
 class Coins(pygame.sprite.Sprite):
     def __init__(self, x, y):
         #for animation
@@ -266,6 +268,7 @@ class Coins(pygame.sprite.Sprite):
         self.image = self.coin_frame[0] #how that sprite looks like initially without animation       
 
         self.rect = self.image.get_rect()
+
         self.rect.x = x
         self.rect.y = y
 
@@ -273,9 +276,6 @@ class Coins(pygame.sprite.Sprite):
         for coin in coins:
             if coin.rect.x + coin.w < 1: #kill the sprite if it moved beyond our screen 
                 coin.kill()
-
-        #if not coins: #and random.choice([True, False])
-            #self.create_new()
 
     def load_images(self):
         self.coin_frame = [ self.looks.get_image(0,0,84,84),
@@ -344,6 +344,7 @@ def show_home_screen():
 all_sprites = pygame.sprite.Group()
 mobs = pygame.sprite.Group()
 coins = pygame.sprite.Group()
+shockers = pygame.sprite.Group()
 player = Player() #drawing the player
 background = Background()
 mob_img = pygame.image.load('rocket.png').convert()
@@ -352,22 +353,9 @@ all_sprites.add(player)#drawing the player
 for i in range(2):
     m = Mob()
     all_sprites.add(m)
-    mobs.add(m)
-
-if Shocker().create_coins == True:
-    num_rows = random.randrange(1, 6, 1)
-    num_columns = random.randrange(1, 11, 2)
-    x_start = random.randrange(width + 30, width + 80, 10)
-    y_start = int((490 - num_rows*30 + (num_rows-1)*10) * 1/ 3)
-    
-    for i in range(num_rows):
-        for j in range(num_columns):
-            c = Coins(x_start + j * 40, y_start + i * 40)
-            all_sprites.add(c)
-            coins.add(c)
+    mobs.add(m)    
 
 
-check_shocker = False
 waiting = False
 game_over = True
 running = True 
@@ -377,8 +365,8 @@ while running:
         game_over = False
         all_sprites = pygame.sprite.Group()
         shockers = pygame.sprite.Group() #group to hold all shockers, to do collisions
-        coins = pygame.sprite.Group()
         s = Shocker().create_new()
+        coins = pygame.sprite.Group()
         mobs=pygame.sprite.Group()
         player = Player() #drawing the player
         background=Background()
@@ -400,10 +388,8 @@ while running:
     #draw/render
     background.render()
     all_sprites.update() #telling the every sprite whatever their update rule is 
-    if check_shocker:
-        points += 10
     #check to see if a mob hit the player
-    
+
     hits=pygame.sprite.spritecollide(player,mobs,False,pygame.sprite.collide_circle)
     if hits:
         running=False
