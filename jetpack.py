@@ -250,7 +250,6 @@ def positions():
     num_columns = random.randrange(1, 11, 2)
     x_start = random.randrange(width + 30, width + 80, 10)
     y_start = int((490 - num_rows * 30 + (num_rows - 1) * 10) * 1/ 3) #делим пустое от монеток пространство на три, одна часть над монетами, два под
-    coordinates = []
     for i in range(num_rows):
         for j in range(num_columns):
             c = Coins(x_start + j * 40, y_start + i * 40)
@@ -260,21 +259,21 @@ def positions():
 
 class Coins(pygame.sprite.Sprite):
     def __init__(self, x, y):
+        pygame.sprite.Sprite.__init__(self)
         #for animation
         self.looks = Spritesheet(coin_animation, 30, 30)
         self.current_frame = 0
         self.last_update = 0 #keeps track when the last sprite change happened 
         self.load_images()
         self.image = self.coin_frame[0] #how that sprite looks like initially without animation       
-
         self.rect = self.image.get_rect()
-
+        #positioning
         self.rect.x = x
         self.rect.y = y
 
     def update(self):
         for coin in coins:
-            if coin.rect.x + coin.w < 1: #kill the sprite if it moved beyond our screen 
+            if coin.rect.x + 30 < 1: #kill the sprite if it moved beyond our screen 
                 coin.kill()
 
     def load_images(self):
@@ -310,6 +309,9 @@ class Background():  #to move background with camera
             #moving shockers
             for shocker in shockers:
                 shocker.rect.right -= 2.7
+
+            for coin in coins:
+                coin.rect.right -= 2.7
                 
         #moving the background picture
             self.bgX1 -= 2.7
