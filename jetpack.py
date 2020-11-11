@@ -207,18 +207,19 @@ class Shocker(pygame.sprite.Sprite):
         self.counter = 0
 
         #for coins 
-        self.create_coins = False                
+        self.create_coins = self.check_both(shockers)  
+
+    def check_both(this):
+        for i in this:
+            if i.rect.right < 1030:
+                return True 
+            return False 
 
     def update(self):
         self.animate()
         for shocker in shockers:
             if shocker.rect.x + shocker.w < 1: #kill the sprite if it moved beyond our screen 
                 shocker.kill()
-
-            if shocker.rect.right > 1030:
-                self.create_coins = False 
-            else:
-                self.create_coins = True 
 
         if not shockers: #and random.choice([True, False])
             self.create_new()
