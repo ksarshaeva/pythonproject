@@ -246,8 +246,8 @@ class Shocker(pygame.sprite.Sprite):
             self.image = self.shocker_frame[self.current_frame]
 
 def positions():
-    num_rows = random.randrange(1, 6, 1)
-    num_columns = random.randrange(1, 11, 2)
+    num_rows = random.randrange(1, 3, 1)
+    num_columns = random.randrange(1, 6, 2)
     x_start = random.randrange(width + 30, width + 80, 10)
     y_start = int((490 - num_rows * 30 + (num_rows - 1) * 10) * 1/ 3) #делим пустое от монеток пространство на три, одна часть над монетами, два под
     for i in range(num_rows):
