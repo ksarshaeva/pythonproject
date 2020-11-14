@@ -74,10 +74,10 @@ class Player(pygame.sprite.Sprite):
             self.speedx = +2.7
             self.rect.x += self.speedx
         if keystate[pygame.K_w]:
-            self.speedy = -3  #flying up
+            self.speedy = -4  #flying up
             self.flying = True 
         elif not keystate[pygame.K_w]:
-            self.speedy += 0.4    #gravity fall
+            self.speedy += 0.3    #gravity fall
         self.rect.y += self.speedy
 
         #if self.flying:
@@ -137,8 +137,7 @@ class Player(pygame.sprite.Sprite):
                 self.last_update = now
                 self.current_frame = (self.current_frame +1) % len(self.flying_frame)
                 self.image = self.flying_frame[self.current_frame]
-                
-                
+                         
 class Coins(pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
@@ -197,7 +196,6 @@ class Mob(pygame.sprite.Sprite):
             self.last_update=now
             self.current_frame = (self.current_frame + 1)% len(self.flying_frames)
             self.image=self.flying_frames[self.current_frame]
-
 
 
 class Shocker(pygame.sprite.Sprite):
@@ -264,79 +262,6 @@ class Shocker(pygame.sprite.Sprite):
             self.current_frame = (self.current_frame + 1) % len(self.shocker_frame)
             self.image = self.shocker_frame[self.current_frame]
 
-        
-'''
-class Coins(pygame.sprite.Sprite):
-    def __init__(self, upperlimit, lowerlimit):
-        self.indent_ceiling = 90 #отступ сверху 
-        self.indent_between = 10 #отступ между каждым рядом и строкой 
-        self.sides = 30 #width and height 
-        if upperlimit != 0 and lowerlimit != 0: #if we spawn then in between shockers 
-            self.rows = random.randrange()
-            self.columns = random.randrange()
-        else:
-            self.rows = random.randrange(1, 6, 1)
-            self.columns = random.randrange(1, 11, 2)
-
-        self.image = pygame.Surface((self.sides, self.sides)) #assign width and height
-        self.image.fill(BLACK)
-        self.rect = self.image.get_rect()
-        self.rect.x = random.randrange(width + 30, width + 80, 10) #i'm not sure how to this 
-        self.rect.y = random.randrange(self.indent_ceiling, self.indent_ceiling + 60, 10)
-
-def positions():
-    num_rows = random.randrange(1, 3, 1)
-    num_columns = random.randrange(1, 6, 2)
-    x_start = random.randrange(width + 30, width + 80, 10)
-    y_start = int((490 - num_rows * 30 + (num_rows - 1) * 10) * 1/ 3) #делим пустое от монеток пространство на три, одна часть над монетами, два под
-    for i in range(num_rows):
-        for j in range(num_columns):
-            c = Coins(x_start + j * 40, y_start + i * 40)
-            all_sprites.add(c)
-            coins.add(c)
-
-
-class Coins(pygame.sprite.Sprite):
-    def __init__(self, x, y):
-        pygame.sprite.Sprite.__init__(self)
-        #for animation
-        self.looks = Spritesheet(coin_animation, 30, 30)
-        self.current_frame = 0
-        self.last_update = 0 #keeps track when the last sprite change happened 
-        self.load_images()
-        self.image = self.coin_frame[0] #how that sprite looks like initially without animation       
-        self.rect = self.image.get_rect()
-        #positioning
-        self.rect.x = x
-        self.rect.y = y
-
-    def update(self):
-        for coin in coins:
-            if coin.rect.x + 30 < 1: #kill the sprite if it moved beyond our screen 
-                coin.kill()
-     
-
-    #def create_new():
-        #c = Coins(, ) #из-за того что теперь там может быть лимиты, здесь это идет цикл без конца
-
-    def load_images(self):
-        self.coin_frame = [ self.looks.get_image(0,0,84,84),
-                            self.looks.get_image(84,0,84,84),
-                            self.looks.get_image(168,0,84,84),
-                            self.looks.get_image(252,0,84,84),
-                            self.looks.get_image(336,0,84,84),
-                            self.looks.get_image(420,0,84,84)]
-        for frame in self.coin_frame:
-            frame.set_colorkey(BLACK) #ignore black background
-
-    def animate(self):
-        now = pygame.time.get_ticks()
-        if now - self.last_update > 60:
-            self.last_update = now
-            self.current_frame = (self.current_frame + 1) % len(self.coin_frame)
-            self.image = self.coin_frame[self.current_frame]
-
-'''
 
 class Background():  #to move background with camera
       def __init__(self):
@@ -405,8 +330,8 @@ def show_start_screen():
             if event.type == pygame.QUIT:
                 pygame.quit()
             if event.type == pygame.KEYDOWN:
-'''                waiting = False
-
+               waiting = False
+''' 
 def show_go_screen():
     screen.fill(WHITE)
     draw_text(screen, "GAME OVER", 48, width / 2, height / 4)
@@ -446,7 +371,7 @@ for i in range(5):
     all_sprites.add(c)
     coins.add(c)
 
-
+score=0
 waiting = False
 game_over = False
 running = True 
