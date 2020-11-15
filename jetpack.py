@@ -1,5 +1,5 @@
 import pygame
-from pygame import mixer
+#from pygame import mixer
 import random
 
 width = 1030
@@ -25,15 +25,17 @@ def draw_text(where, text, size, x, y):
     text_rect.center = (x, y)
     screen.blit(put, text_rect)
 #set up assets(art and sound)
-mixer.music.load("background.wav")
-mixer.music.play(-1)
+pygame.mixer.music.load("background.wav")
+pygame.mixer.music.set_volume(0.5)
+pygame.mixer.music.play(-1)
+
 
 shocker_animation = "lightning.png"
 player_animation = "spritesheet.png"
 coin_animation = "coin.png"
 mob_animation = "rocket_sprite.png"
 #jetpack_sound = pygame.mixer.Sound(".wav")
-rocket_sound = pygame.mixer.Sound("missile.wav")
+#rocket_sound = pygame.mixer.Sound("missile.wav")
 shocker_sound = pygame.mixer.Sound("shocker.wav")
 get_coin_sound = pygame.mixer.Sound("coin.wav")
 
@@ -408,7 +410,7 @@ while running:
         c = Coins()
         all_sprites.add(c)
         coins.add(c)
-        
+
     #update
     background.update()
     
