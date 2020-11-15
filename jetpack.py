@@ -1,4 +1,5 @@
 import pygame
+from pygame import mixer
 import random
 
 width = 1030
@@ -24,6 +25,8 @@ def draw_text(where, text, size, x, y):
     text_rect.center = (x, y)
     screen.blit(put, text_rect)
 #set up assets(art and sound)
+mixer.music.load("background.wav")
+mixer.music.play(-1)
 
 shocker_animation = "lightning.png"
 player_animation = "spritesheet.png"
@@ -31,7 +34,7 @@ coin_animation = "coin.png"
 mob_animation = "rocket_sprite.png"
 #jetpack_sound = pygame.mixer.Sound(".wav")
 rocket_sound = pygame.mixer.Sound("missile.wav")
-shocker_sound = pygame.mixer.Sound("zapper.wav")
+shocker_sound = pygame.mixer.Sound("shocker.wav")
 get_coin_sound = pygame.mixer.Sound("coin.wav")
 
 class Spritesheet:
@@ -219,9 +222,6 @@ class Shocker(pygame.sprite.Sprite):
         self.last_update = 0 #keeps track when the last sprite change happened
         self.load_images()
         self.image = self.shocker_frame[0]
-
-        #for collision
-        #self.mask = pygame.mask.from_surface(self.image)
         
     def update(self):
         self.animate()
@@ -234,9 +234,7 @@ class Shocker(pygame.sprite.Sprite):
 
                 if not shockers: #and random.choice([True, False])
                     self.create_new()
-
-        #if shockers:
-            #positions()
+                
 
     def create_new(self):
         for i in range(2):
@@ -363,6 +361,7 @@ score=0
 waiting = False
 game_over = False
 running = True 
+pause = False
 starting_screen()
 while running:
     if game_over:
@@ -402,19 +401,14 @@ while running:
     if hits:
         game_over=True
 
-    '''
-    hits = pygame.sprite.spritecollide(player, shockers, False, pygame.sprite.collide_mask)
-    if hits:
-        game_over = True
-    '''
     hits=pygame.sprite.spritecollide(player,coins,True,pygame.sprite.collide_rect_ratio(0.7))
     for hit in hits:
+        get_coin_sound.play()
         score+=1
         c = Coins()
         all_sprites.add(c)
         coins.add(c)
         
- 
     #update
     background.update()
     
