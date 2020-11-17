@@ -1,5 +1,4 @@
 import pygame
-#from pygame import mixer
 import random
 
 width = 1030
@@ -24,6 +23,7 @@ def draw_text(where, text, size, x, y):
     text_rect = put.get_rect()
     text_rect.center = (x, y)
     screen.blit(put, text_rect)
+    
 #set up assets(art and sound)
 pygame.mixer.music.load("background.wav")
 pygame.mixer.music.set_volume(0.5)
