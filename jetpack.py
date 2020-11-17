@@ -38,6 +38,7 @@ mob_animation = "rocket_sprite.png"
 #rocket_sound = pygame.mixer.Sound("missile.wav")
 shocker_sound = pygame.mixer.Sound("shocker.wav")
 get_coin_sound = pygame.mixer.Sound("coin.wav")
+zapped_sound = pygame.mixer.Sound("zapped.wav")
 
 class Spritesheet:
     def __init__(self,name, new_w, new_h):
@@ -169,6 +170,7 @@ class Mob(pygame.sprite.Sprite):
         self.t=0
         self.looks = Spritesheet(mob_animation,100,62)
         self.current_frame = 0
+        self.explode = False 
         self.last_update = 0 #keeps track when the last sprite change happened
         self.load_images()
         self.image = self.flying_frames[0]
@@ -188,6 +190,14 @@ class Mob(pygame.sprite.Sprite):
                                 self.looks.get_image(155,294,153,82)]
         for frame in self.flying_frames:
             frame.set_colorkey(BLACK)
+
+        self.explode_frames = []
+        for i in range(9):
+            sprite = f'exp{i}.png'
+            image = pygame.image.load(sprite).convert()
+            image.set_colorkey(BLACK)
+            self.explode_frames.append(image)
+        
 
         
     def update(self):
@@ -234,7 +244,7 @@ class Shocker(pygame.sprite.Sprite):
                 if shocker.rect.x + shocker.w < 1: #kill the sprite if it moved beyond our screen 
                     shocker.kill()
 
-                if not shockers: #and random.choice([True, False])
+                if not shockers: 
                     self.create_new()
                 
 
@@ -278,19 +288,19 @@ class Background():  #to move background with camera
           self.bgX2 = self.background_rect.width
          
       def update(self):
-
+        self.move = 2.7
         if player.rect.right >= width / 3:
             #moving shockers
             for shocker in shockers:
-                shocker.rect.right -= 2.7
+                shocker.rect.right -= self.move
             for c in coins:
-                c.rect.right-=2.7
+                c.rect.right -= self.move 
             
         
                 
         #moving the background picture
-            self.bgX1 -= 2.7
-            self.bgX2 -= 2.7
+            self.bgX1 -= self.move 
+            self.bgX2 -= self.move 
         if self.bgX1 <= -self.background_rect.width:
             self.bgX1 = self.background_rect.width
         if self.bgX2 <= -self.background_rect.width:
@@ -336,6 +346,14 @@ def game_over_screen():
             if event.type == pygame.KEYDOWN:
                 waiting = False
     
+def die():
+    if player.flying:
+        while player.rect.bottom != height - 50:
+            player.rect.y += 1 #fast fall
+            background.move = 0
+    
+    
+
 
 
 all_sprites = pygame.sprite.Group()
@@ -397,10 +415,13 @@ while running:
     #check if player hit any of the sprites
     hits = pygame.sprite.spritecollide(player, shockers, False,pygame.sprite.collide_rect_ratio(0.7))#makes the rect smaller so that collisions will be more accurate
     if hits:
+        #die()
         game_over = True
         
     hits=pygame.sprite.spritecollide(player,mobs,False,pygame.sprite.collide_circle)
     if hits:
+        #mod.explode = True 
+        #die()
         game_over=True
 
     hits=pygame.sprite.spritecollide(player,coins,True,pygame.sprite.collide_rect_ratio(0.7))
