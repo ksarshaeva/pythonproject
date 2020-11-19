@@ -425,7 +425,6 @@ score=0
 waiting = False
 game_over = False
 running = True 
-
 starting_screen()
 while running:
     if game_over:
