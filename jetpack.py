@@ -168,7 +168,7 @@ class Player(pygame.sprite.Sprite):
                     self.image = self.flying_frame[self.current_frame]
         else:#collided with an enemy
             if self.flying:
-                while self.die_frame != 4:
+                while self.die_frame != 4:# дал отдельный self.die_frame, потому что из-за current_frame анимция будет неправильно играться 
                     if now - self.last_update > 60:
                         self.last_update = now
                         self.image = self.fly_die_frames[self.die_frame]
