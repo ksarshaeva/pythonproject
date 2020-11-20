@@ -1,3 +1,4 @@
+
 import pygame
 import random
 from os import path
@@ -40,10 +41,11 @@ shocker_animation = "lightning.png"
 player_animation = "spritesheet.png"
 mob_animation = "rocket_sprite.png"
 #jetpack_sound = pygame.mixer.Sound(".wav")
-#rocket_sound = pygame.mixer.Sound("missile.wav")
-shocker_sound = pygame.mixer.Sound("shocker.wav")
+rocket_sound = pygame.mixer.Sound("rocket.wav")
+#shocker_sound = pygame.mixer.Sound("shocker.wav")
 get_coin_sound = pygame.mixer.Sound("coin.wav")
 zapped_sound = pygame.mixer.Sound("zapped.wav")
+shocker_sound=pygame.mixer.Sound("jetpack_laser_lp.wav")
 
 def freeze_screen():
     global game_over
@@ -206,7 +208,7 @@ class Player(pygame.sprite.Sprite):
 
         if self.die_frame == 4:
             freeze_screen()
-                        
+            
 class Coins(pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
@@ -241,6 +243,7 @@ class Mob(pygame.sprite.Sprite):
         self.rect.x = width+20
         self.rect.y = random.randrange(height-150,70,-10)
         self.speedx = random.randrange(5,10)
+        
 
     def load_images(self):
         self.flying_frames = [self.looks.get_image(155,20,153,82),
@@ -257,8 +260,10 @@ class Mob(pygame.sprite.Sprite):
         if (self.rect.left<0) and (now-self.t>random.choice([20000,35000,40000,30000,50000])):
             self.t = now
             self.rect.x = width+20
-            self.rect.y = random.randrange(height-50,0,-10)
+            self.rect.y = random.randrange(height-150,70,-10)
             self.speedx = random.randrange(5,10)
+            rocket_sound.play()
+            
 
             
     def animate(self):
@@ -267,7 +272,6 @@ class Mob(pygame.sprite.Sprite):
             self.last_update = now
             self.current_frame = (self.current_frame + 1)% len(self.flying_frames)
             self.image = self.flying_frames[self.current_frame]
-
 class Shocker(pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
@@ -483,11 +487,14 @@ while running:
     #check if player hit any of the sprites
     hits = pygame.sprite.spritecollide(player, shockers, False,pygame.sprite.collide_rect_ratio(0.7))#makes the rect smaller so that collisions will be more accurate
     if hits:
+        shocker_sound.play()
         player.alive = False
         game_over = True
         
+        
     hits=pygame.sprite.spritecollide(player,mobs,True,pygame.sprite.collide_circle) #True makes the enemy disappear
     for hit in hits:
+        rocket_sound.stop()
         explode = Explosion(hit.rect.center)
         all_sprites.add(explode)
         player.alive = False
@@ -511,7 +518,7 @@ while running:
     pygame.display.flip()
     
 pygame.quit()
-
+                 
 
 
 
