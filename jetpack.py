@@ -186,7 +186,7 @@ class Player(pygame.sprite.Sprite):
 
     def animate_death(self):
         now = pygame.time.get_ticks()
-        self.speedx = 0
+        self.speedx = 0 #чтобы оно перестало двигаться 
         self.speedy = 0
         if self.flying:
             if now - self.last_update > 60:
