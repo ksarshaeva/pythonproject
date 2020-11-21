@@ -1,4 +1,3 @@
-
 import pygame
 import random
 from os import path
@@ -264,14 +263,13 @@ class Mob(pygame.sprite.Sprite):
             self.speedx = random.randrange(5,10)
             rocket_sound.play()
             
-
-            
     def animate(self):
         now = pygame.time.get_ticks()
         if now-self.last_update>150:
             self.last_update = now
             self.current_frame = (self.current_frame + 1)% len(self.flying_frames)
             self.image = self.flying_frames[self.current_frame]
+            
 class Shocker(pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
