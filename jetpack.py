@@ -419,6 +419,7 @@ for i in range(2):
     m = Mob()
     all_sprites.add(m)
     mobs.add(m)
+    
 for i in range(5):
     c=Coins()
     all_sprites.add(c)
