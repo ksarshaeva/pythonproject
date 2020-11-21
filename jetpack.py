@@ -39,11 +39,10 @@ pygame.mixer.music.play(-1)
 shocker_animation = "lightning.png"
 player_animation = "spritesheet.png"
 mob_animation = "rocket_sprite.png"
-#jetpack_sound = pygame.mixer.Sound(".wav")
+
 rocket_sound = pygame.mixer.Sound("rocket.wav")
-#shocker_sound = pygame.mixer.Sound("shocker.wav")
+explosion_sound = pygame.mixer.Sound("explosion.wav")
 get_coin_sound = pygame.mixer.Sound("coin.wav")
-zapped_sound = pygame.mixer.Sound("zapped.wav")
 shocker_sound=pygame.mixer.Sound("jetpack_laser_lp.wav")
 
 def freeze_screen():
@@ -55,7 +54,7 @@ def freeze_screen():
         now = pygame.time.get_ticks()
     else:
         game_over = True
-
+        
 class Spritesheet:
     def __init__(self,name, new_w, new_h):
         self.spritesheet = pygame.image.load(name).convert()
@@ -227,7 +226,7 @@ class Coins(pygame.sprite.Sprite):
 class Mob(pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
-        self.t=0
+        self.t = 0
         self.looks = Spritesheet(mob_animation,100,62)
         self.current_frame = 0
         self.explode = False 
@@ -240,9 +239,9 @@ class Mob(pygame.sprite.Sprite):
         self.radius = int(self.rect.width*0.7/2)#for hits
 
         self.rect.x = width+20
-        self.rect.y = random.randrange(height-150,70,-10)
-        self.speedx = random.randrange(5,10)
-        
+        self.rect.y = random.randrange(100, 200, 20)
+        self.speedx = random.randrange(5,10) 
+        self.compare_y = 0       
 
     def load_images(self):
         self.flying_frames = [self.looks.get_image(155,20,153,82),
@@ -253,15 +252,31 @@ class Mob(pygame.sprite.Sprite):
             frame.set_colorkey(BLACK)     
 
     def update(self):
+        now = pygame.time.get_ticks()
         self.animate()
         self.rect.x -= self.speedx
-        now = pygame.time.get_ticks()
-        if (self.rect.left<0) and (now-self.t>random.choice([20000,35000,40000,30000,50000])):
-            self.t = now
-            self.rect.x = width+20
-            self.rect.y = random.randrange(height-150,70,-10)
-            self.speedx = random.randrange(5,10)
+
+        if (self.rect.left < 0) and (now-self.t > random.choice([20000,35000,40000,30000,50000])):
+            if self.rect.x + 100 < 1:
+                self.kill()
+
+            if not mobs:
+                self.create_new()
+            self.t = now        
+    
+    def create_new(self):
+        for i in range(2):
+            m = Mob()
+            if i == 0:
+                self.compare_y = m.rect.y
+            else:
+                if self.compare_y < m.rect.y < self.compare_y + 62:
+                    add = random.randrange(200, 100, -10)
+                    m.rect.y = m.rect.y + add
+            all_sprites.add(m)
+            mobs.add(m)
             rocket_sound.play()
+            
             
     def animate(self):
         now = pygame.time.get_ticks()
@@ -288,17 +303,16 @@ class Shocker(pygame.sprite.Sprite):
         self.image = self.shocker_frame[0]
         
     def update(self):
-        self.animate()
         now = pygame.time.get_ticks()
+        self.animate()
+            
         if (self.rect.left < 0) and (now-self.t > random.choice([20000,15000,40000,30000])):
-            self.t = now
-            for shocker in shockers:
-                if shocker.rect.x + shocker.w < 1: #kill the sprite if it moved beyond our screen 
-                    shocker.kill()
-
-                if not shockers: 
-                    self.create_new()
-                
+            if self.rect.x + self.w < 1:
+                self.kill()
+                print('shocker killed')
+            if not shockers:
+                self.create_new()
+            self.t = now    
 
     def create_new(self):
         for i in range(2):
@@ -348,6 +362,7 @@ class Explosion(pygame.sprite.Sprite):
         self.last_update = pygame.time.get_ticks()
 
     def update(self):
+        
         now = pygame.time.get_ticks()
         if now - self.last_update > 60:
             self.last_update = now
@@ -408,12 +423,13 @@ def starting_screen():
                 pygame.quit()
             if event.type == pygame.KEYDOWN:
                waiting = False
+               
  
 def game_over_screen():
     background = pygame.image.load('fon.png').convert()
     screen.blit(background, (0,0))
     draw_text(screen, "GAME OVER", 48, width / 2, height / 4)
-    draw_text(screen,"Score: "+ str(score),30,width/2,height/2)
+    draw_text(screen,"Score: "+ str(score), 30, width/2, height/2)
     draw_text(screen, "Press a key to play again", 18, width / 2, height*3/4)
     pygame.display.flip()
     waiting = True 
@@ -425,32 +441,27 @@ def game_over_screen():
                 pygame.quit()
             if event.type == pygame.KEYDOWN:
                 waiting = False
+                
       
 
 all_sprites = pygame.sprite.Group()
 mobs = pygame.sprite.Group()
 coins = pygame.sprite.Group()
 shockers = pygame.sprite.Group()
-player = Player() #drawing the player
-coins= pygame.sprite.Group()
 background=Background()
-all_sprites.add(player)#drawing the player
-shockers = pygame.sprite.Group() 
+player = Player() #drawing the player
 s = Shocker().create_new()
+all_sprites.add(player)#drawing the player
 
-  
-for i in range(2):
-    m = Mob()
-    all_sprites.add(m)
-    mobs.add(m)
-    
+m = Mob().create_new()
+
 for i in range(5):
     c=Coins()
     all_sprites.add(c)
     coins.add(c)
 
 score=0
-waiting = False
+waiting = False 
 game_over = False
 running = True 
 starting_screen()
@@ -459,19 +470,19 @@ while running:
         game_over_screen()
         game_over = False
         score=0
+
         all_sprites = pygame.sprite.Group()
-        shockers = pygame.sprite.Group() #group to hold all shockers, to do collisions
-        s = Shocker().create_new()
+        mobs = pygame.sprite.Group()
         coins = pygame.sprite.Group()
-        mobs=pygame.sprite.Group()
+        shockers = pygame.sprite.Group() #group to hold all shockers, to do collisions
+        background = Background()
         player = Player() #drawing the player
-        coins= pygame.sprite.Group()
-        background=Background()
+        s = Shocker().create_new()
+        m = Mob().create_new()
+        coins = pygame.sprite.Group()
+        
         all_sprites.add(player)#drawing the player
-        for i in range(2):
-            m=Mob()
-            all_sprites.add(m)
-            mobs.add(m)
+
         for i in range(5):
             c=Coins()
             all_sprites.add(c)
@@ -484,24 +495,24 @@ while running:
             running = False
     
     #check if player hit any of the sprites
-    hits = pygame.sprite.spritecollide(player, shockers, False,pygame.sprite.collide_rect_ratio(0.7))#makes the rect smaller so that collisions will be more accurate
+    hits = pygame.sprite.spritecollide(player, shockers, False,pygame.sprite.collide_rect_ratio(0.8))#makes the rect smaller so that collisions will be more accurate
     if hits:
         shocker_sound.play()
         player.alive = False
-        game_over = True
         
         
-    hits=pygame.sprite.spritecollide(player,mobs,True,pygame.sprite.collide_circle) #True makes the enemy disappear
+    hits = pygame.sprite.spritecollide(player,mobs,True,pygame.sprite.collide_circle) #True makes the enemy disappear
     for hit in hits:
         rocket_sound.stop()
+        explosion_sound.play()
         explode = Explosion(hit.rect.center)
         all_sprites.add(explode)
         player.alive = False
 
-    hits=pygame.sprite.spritecollide(player,coins,True,pygame.sprite.collide_rect_ratio(0.7))
+    hits = pygame.sprite.spritecollide(player,coins,True,pygame.sprite.collide_rect_ratio(0.7))
     for hit in hits:
         get_coin_sound.play()
-        score+=1
+        score += 1
         c = Coins()
         all_sprites.add(c)
         coins.add(c)
