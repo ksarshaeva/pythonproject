@@ -13,6 +13,8 @@ points = 0
 #colors
 BLACK=(0,0,0)
 WHITE = (255,255,255)
+GREY = (128,128,128)
+LIGHT_GREY = (169,169,169)
 
 #initializing pygame and creating a window 
 pygame.init()
@@ -27,6 +29,7 @@ def draw_text(where, text, size, x, y):
     text_rect = put.get_rect()
     text_rect.center = (x, y)
     screen.blit(put, text_rect)
+    
     
 #set up assets(art and sound)
 pygame.mixer.music.load("background.wav")
@@ -44,6 +47,16 @@ get_coin_sound = pygame.mixer.Sound("coin.wav")
 zapped_sound = pygame.mixer.Sound("zapped.wav")
 shocker_sound=pygame.mixer.Sound("jetpack_laser_lp.wav")
 
+def freeze_screen():
+    global game_over
+    background.move = 0
+    player.speedx = 0
+    now = pygame.time.get_ticks()
+    while now < 6000:
+        now = pygame.time.get_ticks()
+    else:
+        game_over = True
+
 class Spritesheet:
     def __init__(self,name, new_w, new_h):
         self.spritesheet = pygame.image.load(name).convert()
@@ -54,7 +67,7 @@ class Spritesheet:
         image = pygame.Surface((w,h))
         image.blit(self.spritesheet, (0,0),(x,y,w,h))
         image = pygame.transform.scale(image,(self.new_w, self.new_h))
-        return image
+        return image 
     
 class Player(pygame.sprite.Sprite):
     #sprite for the player
@@ -80,7 +93,11 @@ class Player(pygame.sprite.Sprite):
         self.speedx = 0
 
     def update(self):
-        self.animate()
+        if self.alive:
+            self.animate()
+        else:
+            self.animate_death()
+
         keystate=pygame.key.get_pressed() #gives a bool list of keys that are down(pressed)
         if player.rect.right >= width / 3:
             self.speedx = 0
@@ -135,7 +152,7 @@ class Player(pygame.sprite.Sprite):
                              ]
         for frame in self.flying_frame:
             frame.set_colorkey(BLACK)
-
+        
         self.run_die_frames = []
         for i in range(5):
             sprite = f'run_die{i}.png'
@@ -154,33 +171,44 @@ class Player(pygame.sprite.Sprite):
             image.set_colorkey(BLACK)
             self.fly_die_frames.append(image)
 
-            
     def animate(self):
         now = pygame.time.get_ticks()
-        if self.alive:
-            if not self.flying:
-                if now - self.last_update > 60:
+        if not self.flying:
+            if now - self.last_update > 60:
+                self.last_update = now
+                self.current_frame = (self.current_frame + 1) % len(self.running_frame)
+                self.image = self.running_frame[self.current_frame]
+        else:
+            if now  - self.last_update > 60:
+                self.last_update = now
+                self.current_frame = (self.current_frame +1) % len(self.flying_frame)
+                self.image = self.flying_frame[self.current_frame]
+
+    def animate_death(self):
+        now = pygame.time.get_ticks()
+        self.speedx = 0 #чтобы оно перестало двигаться 
+        self.speedy = 0
+        if self.flying:
+            if now - self.last_update > 60:
+                if self.die_frame == len(self.fly_die_frames):
+                    self.image = self.fly_die_frames[-1]
+                else:
                     self.last_update = now
-                    self.current_frame = (self.current_frame + 1) % len(self.running_frame)
-                    self.image = self.running_frame[self.current_frame]
-            else:
-                if now  - self.last_update > 60:
+                    self.image = self.fly_die_frames[self.die_frame]
+                    self.die_frame += 1
+                
+        else:
+            if now - self.last_update > 60:
+                if self.die_frame ==  len(self.run_die_frames):
+                    self.image = self.run_die_frames[-1]
+                else:
                     self.last_update = now
-                    self.current_frame = (self.current_frame +1) % len(self.flying_frame)
-                    self.image = self.flying_frame[self.current_frame]
-        else:#collided with an enemy
-            if self.flying:
-                while self.die_frame != 4:# дал отдельный self.die_frame, потому что из-за current_frame анимция будет неправильно играться 
-                    if now - self.last_update > 100:
-                        self.last_update = now
-                        self.image = self.fly_die_frames[self.die_frame]
+                    self.image = self.run_die_frames[self.die_frame]
                     self.die_frame += 1
-            else:
-                while self.die_frame != 4:
-                    if now - self.last_update > 60:
-                        self.last_update = now
-                        self.image = self.run_die_frames[self.die_frame]
-                    self.die_frame += 1
+
+        if self.die_frame == 4:
+            freeze_screen()
+            
 class Coins(pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
@@ -323,7 +351,7 @@ class Explosion(pygame.sprite.Sprite):
 
     def update(self):
         now = pygame.time.get_ticks()
-        if now - self.last_update > 100:
+        if now - self.last_update > 60:
             self.last_update = now
             self.frame +=1
             if self.frame == len(self.explode_frames):
@@ -335,6 +363,7 @@ class Explosion(pygame.sprite.Sprite):
 
 class Background():  #to move background with camera
       def __init__(self):
+          self.move = 2.7
           self.background = pygame.image.load('fon.png').convert()#convert the size of the image to screen size
           self.background_rect = self.background.get_rect()
 
@@ -344,7 +373,7 @@ class Background():  #to move background with camera
           self.bgX2 = self.background_rect.width
          
       def update(self):
-        self.move = 2.7
+        
         if player.rect.right >= width / 3:
             #moving shockers
             for shocker in shockers:
@@ -352,8 +381,6 @@ class Background():  #to move background with camera
             for c in coins:
                 c.rect.right -= self.move 
             
-        
-                
         #moving the background picture
             self.bgX1 -= self.move 
             self.bgX2 -= self.move 
@@ -369,7 +396,6 @@ class Background():  #to move background with camera
 def starting_screen():
     background = pygame.image.load('fon.png').convert()
     screen.blit(background, (0,0))
-
     draw_text(screen, "Jetpack!", 64, width / 2, height / 4)
     draw_text(screen, "press W to fly up", 22, width / 2, height / 2)
     draw_text(screen, "Press a key to begin", 18, width / 2, height *3/4)
@@ -473,7 +499,6 @@ while running:
         explode = Explosion(hit.rect.center)
         all_sprites.add(explode)
         player.alive = False
-        game_over=True
 
     hits=pygame.sprite.spritecollide(player,coins,True,pygame.sprite.collide_rect_ratio(0.7))
     for hit in hits:
