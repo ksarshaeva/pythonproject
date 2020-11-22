@@ -7,6 +7,7 @@ images_path = path.join(path.dirname(__file__), 'images')
 width = 1030
 height = 580
 fps = 80
+created = False
 
 #colors
 BLACK=(0,0,0)
@@ -251,6 +252,8 @@ class Mob(pygame.sprite.Sprite):
             frame.set_colorkey(BLACK)     
 
     def update(self):
+        if not mobs:
+            print('empty')
 
         now = pygame.time.get_ticks()
         self.animate()
@@ -259,23 +262,28 @@ class Mob(pygame.sprite.Sprite):
         if (self.rect.left < 0) and (now-self.t > random.choice([10000, 6000, 20000,35000,40000,30000,50000])):
             if self.rect.x + 100 < 1:
                 self.kill()
+                print('mob killed')
 
             if not mobs:
                 self.create_new()
+                print('created on its own')
             self.t = now        
     
     def create_new(self):
-        for i in range(2):
-            m = Mob()
-            if i == 0:
-                self.compare_y = m.rect.y
-            else:
-                if self.compare_y < m.rect.y < self.compare_y + 62 or self.compare_y < m.rect.bottomleft[1] < self.compare_y + 62 or self.compare_y < m.rect.midleft[1] < self.compare_y + 62:
-                    change = random.randrange(150, 100, -10)
-                    m.rect.y = m.rect.y - change
+        m = Mob()
+        if not mobs:
             all_sprites.add(m)
             mobs.add(m)
             rocket_sound.play()
+        else:
+            for mob in mobs:
+                self.compare_y = mob.rect.y
+            if self.compare_y < m.rect.y < self.compare_y + 62 or self.compare_y < m.rect.bottomleft[1] < self.compare_y + 62 or self.compare_y < m.rect.midleft[1] < self.compare_y + 62:
+                change = random.randrange(150, 100, -10)
+                m.rect.y = m.rect.y - change
+                all_sprites.add(m)
+                mobs.add(m)
+                rocket_sound.play()
             
             
     def animate(self):
@@ -287,8 +295,8 @@ class Mob(pygame.sprite.Sprite):
             
 class Shocker(pygame.sprite.Sprite):
     def __init__(self):
-        self.mob_created = 0
         pygame.sprite.Sprite.__init__(self)
+        self.mob_created = False
         self.w = random.randrange(200, 320, 15)
         self.image = pygame.Surface((self.w, 35)) #assign width and height
         self.rect = self.image.get_rect()
@@ -313,9 +321,11 @@ class Shocker(pygame.sprite.Sprite):
                 print('shocker killed')
             if not shockers:
                 self.create_new()
-            if self.mob_created == 0 and random.randrange(1, 100, 1) % 2 == 0:
+            if self.mob_created == False and random.randrange(1, 100, 1) % 2 == 0:
+                print('created')
+                self.mob_created += True
                 m = Mob().create_new()
-                self.mob_created += 1
+                
             self.t = now    
 
     def create_new(self):
@@ -429,7 +439,6 @@ def starting_screen():
             if event.type == pygame.KEYDOWN:
                waiting = False
                
- 
 def game_over_screen():
     background = pygame.image.load('fon.png').convert()
     screen.blit(background, (0,0))
@@ -447,8 +456,6 @@ def game_over_screen():
             if event.type == pygame.KEYDOWN:
                 waiting = False
                 
-      
-
 all_sprites = pygame.sprite.Group()
 mobs = pygame.sprite.Group()
 coins = pygame.sprite.Group()
@@ -497,7 +504,7 @@ while running:
             running = False
     
     #check if player hit any of the sprites
-    hits = pygame.sprite.spritecollide(player, shockers, False,pygame.sprite.collide_rect_ratio(0.8))#makes the rect smaller so that collisions will be more accurate
+    hits = pygame.sprite.spritecollide(player, shockers, False,pygame.sprite.collide_rect_ratio(0.9))#makes the rect smaller so that collisions will be more accurate
     if hits:
         shocker_sound.play()
         player.alive = False
