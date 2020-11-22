@@ -7,7 +7,6 @@ images_path = path.join(path.dirname(__file__), 'images')
 width = 1030
 height = 580
 fps = 80
-points = 0
 
 #colors
 BLACK=(0,0,0)
@@ -219,9 +218,9 @@ class Coins(pygame.sprite.Sprite):
         self.rect.y = random.randrange(100,450)
 
     def update(self):
-        if self.rect.x<0:
+        if self.rect.x < 0:
             self.rect.x = random.randrange(width+50,width,-5)
-            self.rect.y = random.randrange(100,450)
+            self.rect.y = random.randrange(100,450)           
 
 class Mob(pygame.sprite.Sprite):
     def __init__(self):
@@ -239,7 +238,7 @@ class Mob(pygame.sprite.Sprite):
         self.radius = int(self.rect.width*0.7/2)#for hits
 
         self.rect.x = width+20
-        self.rect.y = random.randrange(100, 200, 20)
+        self.rect.y = random.randrange(200, 440, 20)
         self.speedx = random.randrange(5,10) 
         self.compare_y = 0       
 
@@ -252,11 +251,12 @@ class Mob(pygame.sprite.Sprite):
             frame.set_colorkey(BLACK)     
 
     def update(self):
+
         now = pygame.time.get_ticks()
         self.animate()
         self.rect.x -= self.speedx
 
-        if (self.rect.left < 0) and (now-self.t > random.choice([20000,35000,40000,30000,50000])):
+        if (self.rect.left < 0) and (now-self.t > random.choice([10000, 6000, 20000,35000,40000,30000,50000])):
             if self.rect.x + 100 < 1:
                 self.kill()
 
@@ -270,9 +270,9 @@ class Mob(pygame.sprite.Sprite):
             if i == 0:
                 self.compare_y = m.rect.y
             else:
-                if self.compare_y < m.rect.y < self.compare_y + 62:
-                    add = random.randrange(200, 100, -10)
-                    m.rect.y = m.rect.y + add
+                if self.compare_y < m.rect.y < self.compare_y + 62 or self.compare_y < m.rect.bottomleft[1] < self.compare_y + 62 or self.compare_y < m.rect.midleft[1] < self.compare_y + 62:
+                    change = random.randrange(150, 100, -10)
+                    m.rect.y = m.rect.y - change
             all_sprites.add(m)
             mobs.add(m)
             rocket_sound.play()
@@ -287,6 +287,7 @@ class Mob(pygame.sprite.Sprite):
             
 class Shocker(pygame.sprite.Sprite):
     def __init__(self):
+        self.mob_created = 0
         pygame.sprite.Sprite.__init__(self)
         self.w = random.randrange(200, 320, 15)
         self.image = pygame.Surface((self.w, 35)) #assign width and height
@@ -305,13 +306,16 @@ class Shocker(pygame.sprite.Sprite):
     def update(self):
         now = pygame.time.get_ticks()
         self.animate()
-            
-        if (self.rect.left < 0) and (now-self.t > random.choice([20000,15000,40000,30000])):
+
+        if (self.rect.left < 0) and (now-self.t > random.choice([10000,6000,15000,20000,35000,40000,30000,50000])):
             if self.rect.x + self.w < 1:
                 self.kill()
                 print('shocker killed')
             if not shockers:
                 self.create_new()
+            if self.mob_created == 0 and random.randrange(1, 100, 1) % 2 == 0:
+                m = Mob().create_new()
+                self.mob_created += 1
             self.t = now    
 
     def create_new(self):
@@ -323,6 +327,7 @@ class Shocker(pygame.sprite.Sprite):
                 s.rect.y = self.compare + 250
             all_sprites.add(s)
             shockers.add(s)
+        
             
     def load_images(self):
         self.shocker_frame = [self.looks.get_image(0,19,513,95),
@@ -412,7 +417,7 @@ def starting_screen():
     draw_text(screen, "Jetpack!", 64, width / 2, height / 4)
     draw_text(screen, "press W to fly up", 22, width / 2, height / 2)
     draw_text(screen, "Press a key to begin", 18, width / 2, height *3/4)
-    draw_text(screen, str(points), 22, width/2, 20)
+    draw_text(screen, str(score), 22, width/2, 20)
     pygame.display.flip()
     waiting = True 
     while waiting:
@@ -451,12 +456,10 @@ shockers = pygame.sprite.Group()
 background=Background()
 player = Player() #drawing the player
 s = Shocker().create_new()
-all_sprites.add(player)#drawing the player
-
-m = Mob().create_new()
+all_sprites.add(player)#drawing the player    
 
 for i in range(5):
-    c=Coins()
+    c = Coins()
     all_sprites.add(c)
     coins.add(c)
 
@@ -478,7 +481,6 @@ while running:
         background = Background()
         player = Player() #drawing the player
         s = Shocker().create_new()
-        m = Mob().create_new()
         coins = pygame.sprite.Group()
         
         all_sprites.add(player)#drawing the player
@@ -499,8 +501,7 @@ while running:
     if hits:
         shocker_sound.play()
         player.alive = False
-        
-        
+            
     hits = pygame.sprite.spritecollide(player,mobs,True,pygame.sprite.collide_circle) #True makes the enemy disappear
     for hit in hits:
         rocket_sound.stop()
