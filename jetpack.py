@@ -252,9 +252,6 @@ class Mob(pygame.sprite.Sprite):
             frame.set_colorkey(BLACK)     
 
     def update(self):
-        if not mobs:
-            print('empty')
-
         now = pygame.time.get_ticks()
         self.animate()
         self.rect.x -= self.speedx
@@ -262,11 +259,9 @@ class Mob(pygame.sprite.Sprite):
         if (self.rect.left < 0) and (now-self.t > random.choice([10000, 6000, 20000,35000,40000,30000,50000])):
             if self.rect.x + 100 < 1:
                 self.kill()
-                print('mob killed')
 
             if not mobs:
                 self.create_new()
-                print('created on its own')
             self.t = now        
     
     def create_new(self):
@@ -318,11 +313,9 @@ class Shocker(pygame.sprite.Sprite):
         if (self.rect.left < 0) and (now-self.t > random.choice([10000,6000,15000,20000,35000,40000,30000,50000])):
             if self.rect.x + self.w < 1:
                 self.kill()
-                print('shocker killed')
             if not shockers:
                 self.create_new()
             if self.mob_created == False and random.randrange(1, 100, 1) % 2 == 0:
-                print('created')
                 self.mob_created += True
                 m = Mob().create_new()
                 
