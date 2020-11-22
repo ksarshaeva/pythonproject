@@ -12,8 +12,6 @@ created = False
 #colors
 BLACK=(0,0,0)
 WHITE = (255,255,255)
-GREY = (128,128,128)
-LIGHT_GREY = (169,169,169)
 
 #initializing pygame and creating a window 
 pygame.init()
