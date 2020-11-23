@@ -7,7 +7,6 @@ images_path = path.join(path.dirname(__file__), 'images')
 width = 1030
 height = 580
 fps = 80
-created = False
 
 #colors
 BLACK=(0,0,0)
@@ -205,7 +204,7 @@ class Player(pygame.sprite.Sprite):
         if self.die_frame == 4:
             freeze_screen()
             
-class Coins(pygame.sprite.Sprite):
+class Coin(pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
         self.image = pygame.image.load('coin.png').convert()
@@ -213,13 +212,23 @@ class Coins(pygame.sprite.Sprite):
         self.last_update = 0
         self.image.set_colorkey(BLACK)
         self.rect = self.image.get_rect()
-        self.rect.x = random.randrange(width+50,width,-5)
+        self.rect.x = random.randrange(width + 300 ,width,-5)
         self.rect.y = random.randrange(100,450)
 
     def update(self):
-        if self.rect.x < 0:
-            self.rect.x = random.randrange(width+50,width,-5)
-            self.rect.y = random.randrange(100,450)           
+        if self.rect.left < 1:
+            self.kill()
+
+        if len(coins.sprites()) < 5:
+            self.create_new()  
+
+    def create_new(self):
+        c = Coin() 
+        duplicate = coins.copy()
+        duplicate2 = shockers.copy()
+        collision = pygame.sprite.spritecollide(c, coins, True)
+        coins.add(c)
+        all_sprites.add(c)
 
 class Mob(pygame.sprite.Sprite):
     def __init__(self):
@@ -455,11 +464,7 @@ background=Background()
 player = Player() #drawing the player
 s = Shocker().create_new()
 all_sprites.add(player)#drawing the player    
-
-for i in range(5):
-    c = Coins()
-    all_sprites.add(c)
-    coins.add(c)
+c = Coin().create_new()
 
 score=0
 waiting = False 
@@ -480,13 +485,9 @@ while running:
         player = Player() #drawing the player
         s = Shocker().create_new()
         coins = pygame.sprite.Group()
-        
+        c = Coin().create_new()
         all_sprites.add(player)#drawing the player
-
-        for i in range(5):
-            c=Coins()
-            all_sprites.add(c)
-            coins.add(c)
+        
     #keep loop running at the right speed
     clock.tick(fps) 
     #process input 
@@ -512,9 +513,6 @@ while running:
     for hit in hits:
         get_coin_sound.play()
         score += 1
-        c = Coins()
-        all_sprites.add(c)
-        coins.add(c)
 
     #update
     background.update()
