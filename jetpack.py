@@ -224,8 +224,6 @@ class Coin(pygame.sprite.Sprite):
 
     def create_new(self):
         c = Coin() 
-        duplicate = coins.copy()
-        duplicate2 = shockers.copy()
         collision = pygame.sprite.spritecollide(c, coins, True)
         coins.add(c)
         all_sprites.add(c)
@@ -263,7 +261,7 @@ class Mob(pygame.sprite.Sprite):
         self.animate()
         self.rect.x -= self.speedx
 
-        if (self.rect.left < 0) and (now-self.t > random.choice([10000, 6000, 20000,35000,40000,30000,50000])):
+        if (self.rect.left < 0) and (now-self.t > random.choice([10000,20000,35000,40000,30000,50000])):
             if self.rect.x + 100 < 1:
                 self.kill()
 
@@ -323,7 +321,7 @@ class Shocker(pygame.sprite.Sprite):
             if not shockers:
                 self.create_new()
             if self.mob_created == False and random.randrange(1, 100, 1) % 2 == 0:
-                self.mob_created += True
+                self.mob_created = True
                 m = Mob().create_new()
                 
             self.t = now    
@@ -496,7 +494,7 @@ while running:
             running = False
     
     #check if player hit any of the sprites
-    hits = pygame.sprite.spritecollide(player, shockers, False,pygame.sprite.collide_rect_ratio(0.9))#makes the rect smaller so that collisions will be more accurate
+    hits = pygame.sprite.spritecollide(player, shockers, False,pygame.sprite.collide_rect_ratio(0.8))#makes the rect smaller so that collisions will be more accurate
     if hits:
         shocker_sound.play()
         player.alive = False
